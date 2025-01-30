@@ -77,7 +77,7 @@ async function loadLanguage(language) {
 }
 
 /**
- * Updates the UI with language-specific strings, including the game status if the game is over.
+ * Updates the UI with language-specific strings.
  * @returns {void}
  */
 function updateUI() {
@@ -85,20 +85,12 @@ function updateUI() {
   document.querySelector('title').textContent = languageStrings.title;
   resetButton.textContent = languageStrings.resetButton;
 
-  // Update the game status message if the game is over
+  // Update the status message if the game is over
   if (gameOver) {
-    const currentStatus = statusElement.textContent;
-    if (
-      currentStatus === languageStrings.gameOver ||
-      currentStatus === languageStrings.youWin
-    ) {
-      // Translate the status message based on the current game state
-      if (currentStatus === languageStrings.gameOver) {
-        statusElement.textContent = languageStrings.gameOver;
-      } else if (currentStatus === languageStrings.youWin) {
-        statusElement.textContent = languageStrings.youWin;
-      }
-    }
+    statusElement.textContent =
+      statusElement.textContent === languageStrings.gameOver
+        ? languageStrings.gameOver
+        : languageStrings.youWin;
   }
 }
 
@@ -109,6 +101,7 @@ function updateUI() {
 function initializeGame() {
   gameOver = false;
   firstClick = true;
+  statusElement.hidden = true; // Hide the status element
   statusElement.textContent = '';
   boardElement.innerHTML = '';
   board = createBoard(ROWS, COLS);
@@ -255,6 +248,7 @@ function handleCellClick(event) {
   if (cell.isMine) {
     revealAllMines();
     statusElement.textContent = languageStrings.gameOver;
+    statusElement.hidden = false; // Show the status element
     gameOver = true;
     return;
   }
@@ -262,6 +256,7 @@ function handleCellClick(event) {
   revealCell(row, col);
   if (checkWin()) {
     statusElement.textContent = languageStrings.youWin;
+    statusElement.hidden = false; // Show the status element
     gameOver = true;
   }
 }
