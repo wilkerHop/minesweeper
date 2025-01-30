@@ -4,6 +4,7 @@ const MINES = 15;
 
 let board = [];
 let gameOver = false;
+let firstClick = true; // Track if it's the first click
 
 const boardElement = document.querySelector('.board');
 const statusElement = document.querySelector('.status');
@@ -12,11 +13,10 @@ const resetButton = document.querySelector('.reset-button');
 // Initialize the game
 function initializeGame() {
   gameOver = false;
+  firstClick = true; // Reset first click tracker
   statusElement.textContent = '';
   boardElement.innerHTML = '';
   board = createBoard(ROWS, COLS);
-  placeMines(board, MINES);
-  calculateAdjacentMines(board);
   renderBoard(board);
 }
 
@@ -38,17 +38,23 @@ function createBoard(rows, cols) {
   return board;
 }
 
-// Place mines randomly
-function placeMines(board, mines) {
+// Place mines randomly, ensuring the first clicked cell is not a mine
+function placeMines(board, mines, firstRow, firstCol) {
   let placedMines = 0;
   while (placedMines < mines) {
     const row = Math.floor(Math.random() * ROWS);
     const col = Math.floor(Math.random() * COLS);
-    if (!board[row][col].isMine) {
+    // Ensure the first clicked cell and its neighbors are not mines
+    if (!board[row][col].isMine && !isAdjacent(firstRow, firstCol, row, col)) {
       board[row][col].isMine = true;
       placedMines++;
     }
   }
+}
+
+// Check if a cell is adjacent to the first clicked cell
+function isAdjacent(firstRow, firstCol, row, col) {
+  return Math.abs(firstRow - row) <= 1 && Math.abs(firstCol - col) <= 1;
 }
 
 // Calculate adjacent mines for each cell
@@ -106,7 +112,15 @@ function handleCellClick(event) {
   const row = parseInt(event.target.dataset.row);
   const col = parseInt(event.target.dataset.col);
   const cell = board[row][col];
+
   if (cell.isFlagged || cell.isRevealed) return;
+
+  // On first click, place mines and calculate adjacent mines
+  if (firstClick) {
+    placeMines(board, MINES, row, col);
+    calculateAdjacentMines(board);
+    firstClick = false;
+  }
 
   if (cell.isMine) {
     revealAllMines();
