@@ -77,14 +77,24 @@ async function loadLanguage(language) {
 }
 
 /**
- * Updates the UI with language-specific strings.
+ * Updates the UI with language-specific strings while preserving the game status.
  * @returns {void}
  */
 function updateUI() {
   document.querySelector('h1').textContent = languageStrings.title;
   document.querySelector('title').textContent = languageStrings.title;
   resetButton.textContent = languageStrings.resetButton;
-  statusElement.textContent = '';
+
+  // Preserve the game status message if the game is over
+  if (gameOver) {
+    const currentStatus = statusElement.textContent;
+    if (
+      currentStatus === languageStrings.gameOver ||
+      currentStatus === languageStrings.youWin
+    ) {
+      statusElement.textContent = currentStatus;
+    }
+  }
 }
 
 /**
