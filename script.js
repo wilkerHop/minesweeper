@@ -1,26 +1,77 @@
+/**
+ * Number of rows in the game board.
+ * @type {number}
+ */
 const ROWS = 10;
+
+/**
+ * Number of columns in the game board.
+ * @type {number}
+ */
 const COLS = 10;
+
+/**
+ * Number of mines to be placed on the board.
+ * @type {number}
+ */
 const MINES = 15;
 
+/**
+ * 2D array representing the game board.
+ * Each cell is an object with properties: isMine, isRevealed, isFlagged, adjacentMines.
+ * @type {Array<Array<{isMine: boolean, isRevealed: boolean, isFlagged: boolean, adjacentMines: number}>>}
+ */
 let board = [];
-let gameOver = false;
-let firstClick = true; // Track if it's the first click
 
+/**
+ * Indicates whether the game is over.
+ * @type {boolean}
+ */
+let gameOver = false;
+
+/**
+ * Tracks whether the first cell has been clicked.
+ * @type {boolean}
+ */
+let firstClick = true;
+
+/**
+ * Reference to the HTML element representing the game board.
+ * @type {HTMLElement}
+ */
 const boardElement = document.querySelector('.board');
+
+/**
+ * Reference to the HTML element displaying the game status.
+ * @type {HTMLElement}
+ */
 const statusElement = document.querySelector('.status');
+
+/**
+ * Reference to the reset button HTML element.
+ * @type {HTMLElement}
+ */
 const resetButton = document.querySelector('.reset-button');
 
-// Initialize the game
+/**
+ * Initializes the game by resetting the board and game state.
+ * @returns {void}
+ */
 function initializeGame() {
   gameOver = false;
-  firstClick = true; // Reset first click tracker
+  firstClick = true;
   statusElement.textContent = '';
   boardElement.innerHTML = '';
   board = createBoard(ROWS, COLS);
   renderBoard(board);
 }
 
-// Create the board
+/**
+ * Creates a 2D array representing the game board.
+ * @param {number} rows - Number of rows in the board.
+ * @param {number} cols - Number of columns in the board.
+ * @returns {Array<Array<{isMine: boolean, isRevealed: boolean, isFlagged: boolean, adjacentMines: number}>>} The initialized board.
+ */
 function createBoard(rows, cols) {
   const board = [];
   for (let i = 0; i < rows; i++) {
@@ -38,13 +89,19 @@ function createBoard(rows, cols) {
   return board;
 }
 
-// Place mines randomly, ensuring the first clicked cell is not a mine
+/**
+ * Places mines randomly on the board, ensuring the first clicked cell and its neighbors are safe.
+ * @param {Array<Array<{isMine: boolean}>>} board - The game board.
+ * @param {number} mines - Number of mines to place.
+ * @param {number} firstRow - Row index of the first clicked cell.
+ * @param {number} firstCol - Column index of the first clicked cell.
+ * @returns {void}
+ */
 function placeMines(board, mines, firstRow, firstCol) {
   let placedMines = 0;
   while (placedMines < mines) {
     const row = Math.floor(Math.random() * ROWS);
     const col = Math.floor(Math.random() * COLS);
-    // Ensure the first clicked cell and its neighbors are not mines
     if (!board[row][col].isMine && !isAdjacent(firstRow, firstCol, row, col)) {
       board[row][col].isMine = true;
       placedMines++;
@@ -52,12 +109,23 @@ function placeMines(board, mines, firstRow, firstCol) {
   }
 }
 
-// Check if a cell is adjacent to the first clicked cell
+/**
+ * Checks if a cell is adjacent to the first clicked cell.
+ * @param {number} firstRow - Row index of the first clicked cell.
+ * @param {number} firstCol - Column index of the first clicked cell.
+ * @param {number} row - Row index of the cell to check.
+ * @param {number} col - Column index of the cell to check.
+ * @returns {boolean} True if the cell is adjacent, false otherwise.
+ */
 function isAdjacent(firstRow, firstCol, row, col) {
   return Math.abs(firstRow - row) <= 1 && Math.abs(firstCol - col) <= 1;
 }
 
-// Calculate adjacent mines for each cell
+/**
+ * Calculates the number of adjacent mines for each cell on the board.
+ * @param {Array<Array<{isMine: boolean, adjacentMines: number}>>} board - The game board.
+ * @returns {void}
+ */
 function calculateAdjacentMines(board) {
   for (let i = 0; i < ROWS; i++) {
     for (let j = 0; j < COLS; j++) {
@@ -68,7 +136,13 @@ function calculateAdjacentMines(board) {
   }
 }
 
-// Count adjacent mines for a cell
+/**
+ * Counts the number of adjacent mines for a given cell.
+ * @param {Array<Array<{isMine: boolean}>>} board - The game board.
+ * @param {number} row - Row index of the cell.
+ * @param {number} col - Column index of the cell.
+ * @returns {number} The number of adjacent mines.
+ */
 function countAdjacentMines(board, row, col) {
   let count = 0;
   for (let i = -1; i <= 1; i++) {
@@ -89,7 +163,11 @@ function countAdjacentMines(board, row, col) {
   return count;
 }
 
-// Render the board
+/**
+ * Renders the game board in the HTML.
+ * @param {Array<Array<{isMine: boolean, isRevealed: boolean, isFlagged: boolean}>>} board - The game board.
+ * @returns {void}
+ */
 function renderBoard(board) {
   boardElement.style.gridTemplateColumns = `repeat(${COLS}, 30px)`;
   boardElement.style.gridTemplateRows = `repeat(${ROWS}, 30px)`;
@@ -106,7 +184,11 @@ function renderBoard(board) {
   }
 }
 
-// Handle left-click (reveal cell)
+/**
+ * Handles left-click events on cells to reveal them.
+ * @param {MouseEvent} event - The click event.
+ * @returns {void}
+ */
 function handleCellClick(event) {
   if (gameOver) return;
   const row = parseInt(event.target.dataset.row);
@@ -115,7 +197,6 @@ function handleCellClick(event) {
 
   if (cell.isFlagged || cell.isRevealed) return;
 
-  // On first click, place mines and calculate adjacent mines
   if (firstClick) {
     placeMines(board, MINES, row, col);
     calculateAdjacentMines(board);
@@ -136,7 +217,11 @@ function handleCellClick(event) {
   }
 }
 
-// Handle right-click (flag cell)
+/**
+ * Handles right-click events on cells to toggle flags.
+ * @param {MouseEvent} event - The contextmenu event.
+ * @returns {void}
+ */
 function handleCellRightClick(event) {
   event.preventDefault();
   if (gameOver) return;
@@ -149,7 +234,12 @@ function handleCellRightClick(event) {
   event.target.classList.toggle('flagged', cell.isFlagged);
 }
 
-// Reveal a cell and its neighbors (if no adjacent mines)
+/**
+ * Reveals a cell and its neighbors if it has no adjacent mines.
+ * @param {number} row - Row index of the cell.
+ * @param {number} col - Column index of the cell.
+ * @returns {void}
+ */
 function revealCell(row, col) {
   const cell = board[row][col];
   if (cell.isRevealed || cell.isFlagged) return;
@@ -175,7 +265,10 @@ function revealCell(row, col) {
   }
 }
 
-// Reveal all mines (on game over)
+/**
+ * Reveals all mines on the board when the game is lost.
+ * @returns {void}
+ */
 function revealAllMines() {
   for (let i = 0; i < ROWS; i++) {
     for (let j = 0; j < COLS; j++) {
@@ -191,7 +284,10 @@ function revealAllMines() {
   }
 }
 
-// Check if the player has won
+/**
+ * Checks if the player has won the game by revealing all non-mine cells.
+ * @returns {boolean} True if the player has won, false otherwise.
+ */
 function checkWin() {
   for (let i = 0; i < ROWS; i++) {
     for (let j = 0; j < COLS; j++) {
@@ -204,8 +300,8 @@ function checkWin() {
   return true;
 }
 
-// Reset the game
+// Event listener for the reset button
 resetButton.addEventListener('click', initializeGame);
 
-// Start the game
+// Initialize the game on page load
 initializeGame();
