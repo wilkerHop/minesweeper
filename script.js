@@ -54,6 +54,12 @@ const statusElement = document.querySelector('.status');
 const resetButton = document.querySelector('.reset-button');
 
 /**
+ * Reference to the language selector dropdown.
+ * @type {HTMLElement}
+ */
+const languageSelect = document.getElementById('language-select');
+
+/**
  * Object containing language-specific strings for the UI.
  * @type {Object}
  */
@@ -76,7 +82,9 @@ async function loadLanguage(language) {
  */
 function updateUI() {
   document.querySelector('h1').textContent = languageStrings.title;
+  document.querySelector('title').textContent = languageStrings.title;
   resetButton.textContent = languageStrings.resetButton;
+  statusElement.textContent = '';
 }
 
 /**
@@ -328,6 +336,11 @@ function checkWin() {
 
 // Event listener for the reset button
 resetButton.addEventListener('click', initializeGame);
+
+// Event listener for the language selector
+languageSelect.addEventListener('change', (event) => {
+  loadLanguage(event.target.value);
+});
 
 // Load default language (English) and initialize the game
 loadLanguage('en').then(initializeGame);

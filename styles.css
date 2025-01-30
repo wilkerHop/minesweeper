@@ -20,6 +20,15 @@ h1 {
   margin-bottom: 20px;
 }
 
+.language-selector {
+  margin-bottom: 20px;
+}
+
+.language-selector select {
+  padding: 5px;
+  font-size: 1em;
+}
+
 .board {
   display: grid;
   gap: 2px;
