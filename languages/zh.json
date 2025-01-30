@@ -1,0 +1,6 @@
+{
+  "title": "扫雷",
+  "gameOver": "游戏结束！你踩到了地雷。",
+  "youWin": "恭喜！你赢了！",
+  "resetButton": "重置游戏"
+}

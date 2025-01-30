@@ -54,6 +54,32 @@ const statusElement = document.querySelector('.status');
 const resetButton = document.querySelector('.reset-button');
 
 /**
+ * Object containing language-specific strings for the UI.
+ * @type {Object}
+ */
+let languageStrings = {};
+
+/**
+ * Loads language-specific strings from a JSON file.
+ * @param {string} language - The language code (e.g., 'en', 'pt').
+ * @returns {Promise<void>}
+ */
+async function loadLanguage(language) {
+  const response = await fetch(`languages/${language}.json`);
+  languageStrings = await response.json();
+  updateUI();
+}
+
+/**
+ * Updates the UI with language-specific strings.
+ * @returns {void}
+ */
+function updateUI() {
+  document.querySelector('h1').textContent = languageStrings.title;
+  resetButton.textContent = languageStrings.resetButton;
+}
+
+/**
  * Initializes the game by resetting the board and game state.
  * @returns {void}
  */
@@ -205,14 +231,14 @@ function handleCellClick(event) {
 
   if (cell.isMine) {
     revealAllMines();
-    statusElement.textContent = 'Game Over! You hit a mine.';
+    statusElement.textContent = languageStrings.gameOver;
     gameOver = true;
     return;
   }
 
   revealCell(row, col);
   if (checkWin()) {
-    statusElement.textContent = 'Congratulations! You won!';
+    statusElement.textContent = languageStrings.youWin;
     gameOver = true;
   }
 }
@@ -303,5 +329,5 @@ function checkWin() {
 // Event listener for the reset button
 resetButton.addEventListener('click', initializeGame);
 
-// Initialize the game on page load
-initializeGame();
+// Load default language (English) and initialize the game
+loadLanguage('en').then(initializeGame);

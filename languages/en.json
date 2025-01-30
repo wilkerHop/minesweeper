@@ -1,0 +1,6 @@
+{
+  "title": "Minesweeper",
+  "gameOver": "Game Over! You hit a mine.",
+  "youWin": "Congratulations! You won!",
+  "resetButton": "Reset Game"
+}
