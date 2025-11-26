@@ -25,6 +25,9 @@ function createSeededRNG(seed: string): () => number {
   };
 }
 
+// Import crypto at the top level for server-side usage
+import crypto from 'crypto';
+
 /**
  * Generates a cryptographically secure random seed
  * This is server-side only to prevent client manipulation
@@ -36,8 +39,6 @@ export function generateSeed(): string {
     throw new Error('generateSeed() must be called server-side only');
   }
   
-  // eslint-disable-next-line @typescript-eslint/no-require-imports -- Server-side only, required for crypto module
-  const crypto = require('crypto') as typeof import('crypto');
   return crypto.randomBytes(32).toString('hex');
 }
 

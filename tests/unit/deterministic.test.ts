@@ -1,8 +1,8 @@
 import {
-    getAdjacentMines,
-    getFloodFillCells,
-    isMineAt,
-    validateDeterminism,
+  getAdjacentMines,
+  getFloodFillCells,
+  isMineAt,
+  validateDeterminism,
 } from '@/lib/game/deterministic';
 import { describe, expect, it } from 'vitest';
 
@@ -41,10 +41,12 @@ describe('Deterministic Hash Function', () => {
     const seed1 = 'seed-one';
     const seed2 = 'seed-two';
     
-    // eslint-disable-next-line @typescript-eslint/no-unused-vars -- Used in statistical test below
     const result1 = isMineAt(10, 20, seed1);
-    // eslint-disable-next-line @typescript-eslint/no-unused-vars -- Used in statistical test below
     const result2 = isMineAt(10, 20, seed2);
+    
+    // Ensure both are valid booleans
+    expect(typeof result1).toBe('boolean');
+    expect(typeof result2).toBe('boolean');
     
     // With high probability, different seeds should give different results
     // We test multiple coordinates to be more confident

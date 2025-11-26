@@ -28,6 +28,15 @@ jobs:
       - name: Install dependencies
         run: npm ci
 
+      - name: Check for TypeScript sins
+        run: |
+          echo "Checking for eslint-disable, @ts-ignore, @ts-nocheck, @ts-expect-error..."
+          if grep -rE "eslint-disable|@ts-ignore|@ts-nocheck|@ts-expect-error" lib/ app/ tests/ components/ --include="*.ts" --include="*.tsx" 2>/dev/null; then
+            echo "❌ Found TypeScript sins! Please remove them and fix the underlying issues."
+            exit 1
+          fi
+          echo "✓ No sins found - code is clean!"
+
       - name: Run ESLint
         run: npm run lint
 
