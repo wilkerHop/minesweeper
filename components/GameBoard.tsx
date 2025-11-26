@@ -12,17 +12,33 @@ import {
     recordMockCellModification,
     updateMockGameScore,
 } from '@/app/actions/mock';
-import { POINTS_PER_CELL, POINTS_PER_FLAG } from '@/lib/game/constants';
 import {
     getAdjacentMines,
     getFloodFillCells,
     isMineAt,
 } from '@/lib/game/deterministic';
-import { CellAction, GameStatus } from '@/lib/game/types';
+import { CellAction, GameStatus, PlayerProgress, UpgradeLevels } from '@/lib/game/types';
+import {
+    calculateMineDensity,
+    calculatePointsPerCell,
+    calculatePointsPerFlag,
+    calculateSafeClicks,
+    calculateSecondChances,
+    UPGRADES,
+} from '@/lib/game/upgrades';
+import {
+    addCoins,
+    loadProgress,
+    purchaseUpgrade,
+    updateGameStats
+} from '@/lib/services/progressStorage';
 import { useCallback, useEffect, useState } from 'react';
 import { Cell } from './Cell';
+import { GameOverModal } from './GameOverModal';
 import { GameTimer } from './GameTimer';
 import { MineCounter } from './MineCounter';
+import { ProgressHeader } from './ProgressHeader';
+import { UpgradeShop } from './UpgradeShop';
 
 // Use mock mode if environment variables aren't configured
 const USE_MOCK = typeof window !== 'undefined' && !process.env.NEXT_PUBLIC_SUPABASE_URL?.startsWith('https://');
@@ -43,19 +59,41 @@ export function GameBoard() {
   const [viewportY, setViewportY] = useState(-5);
   const [isLoading, setIsLoading] = useState(true);
 
+  // Progression system state
+  const [progress, setProgress] = useState<PlayerProgress>(loadProgress());
+  const [showGameOver, setShowGameOver] = useState(false);
+  const [showUpgradeShop, setShowUpgradeShop] = useState(false);
+  const [coinsEarned, setCoinsEarned] = useState(0);
+  const [safeClicksRemaining, setSafeClicksRemaining] = useState(1);
+  const [secondChancesRemaining, setSecondChancesRemaining] = useState(0);
+
   const VIEWPORT_WIDTH = 20;
   const VIEWPORT_HEIGHT = 15;
 
-  // Initialize game
+  // Initialize game with upgrades
   useEffect(() => {
     async function initGame() {
       try {
+        // Load progress and apply upgrades
+        const currentProgress = loadProgress();
+        setProgress(currentProgress);
+        
         const session = USE_MOCK 
           ? await createMockGameSession()
           : await createGameSession();
         setSessionId(session.sessionId);
         setSeed(session.seed);
-        setMineDensity(session.mineDensity);
+        
+        // Apply upgrade effects
+        const effectiveDensity = calculateMineDensity(currentProgress.upgrades.mineDensityReduction);
+        setMineDensity(effectiveDensity);
+        
+        const safeClicks = calculateSafeClicks(currentProgress.upgrades.safeZone);
+        setSafeClicksRemaining(safeClicks);
+        
+        const secondChances = calculateSecondChances(currentProgress.upgrades.secondChance);
+        setSecondChancesRemaining(secondChances);
+        
         setIsLoading(false);
       } catch (error) {
         console.error('Failed to initialize game:', error);
@@ -63,14 +101,14 @@ export function GameBoard() {
         const session = await createMockGameSession();
         setSessionId(session.sessionId);
         setSeed(session.seed);
-        setMineDensity(session.mineDensity);
+        setMineDensity(0.15);
         setIsLoading(false);
       }
     }
     initGame();
   }, []);
 
-  const [isFirstClick, setIsFirstClick] = useState(true);
+  const [clickCount, setClickCount] = useState(0);
 
   const revealCell = useCallback(
     async (x: number, y: number) => {
@@ -84,19 +122,19 @@ export function GameBoard() {
 
       let currentSeed = seed;
 
-      // First Click Safe Logic
-      if (isFirstClick) {
+      // Safe Zone Logic (upgraded first click safe)
+      if (clickCount < safeClicksRemaining) {
         let attempts = 0;
-        // Ensure first click is not a mine
+        // Ensure safe clicks don't hit mines
         while (isMineAt(x, y, currentSeed, mineDensity) && attempts < 100) {
-          currentSeed = `${currentSeed}-safe`;
+          currentSeed = `${currentSeed}-safe-${clickCount}`;
           attempts++;
         }
         if (currentSeed !== seed) {
           setSeed(currentSeed);
         }
-        setIsFirstClick(false);
       }
+      setClickCount(prev => prev + 1);
 
       const isMine = isMineAt(x, y, currentSeed, mineDensity);
 
@@ -108,6 +146,18 @@ export function GameBoard() {
       }
 
       if (isMine) {
+        // Check for second chance
+        if (secondChancesRemaining > 0) {
+          setSecondChancesRemaining(prev => prev - 1);
+          // Show visual feedback but don't end game
+          setCells((prev) => {
+            const next = new Map(prev);
+            next.set(cellKey, { ...cellState, isRevealed: true });
+            return next;
+          });
+          return;
+        }
+        
         // Game over - Reveal all mines in viewport
         setCells((prev) => {
           const next = new Map(prev);
@@ -130,11 +180,22 @@ export function GameBoard() {
           return next;
         });
         setGameStatus(GameStatus.LOST);
+        
+        // Calculate coins and update stats
+        const coins = Math.floor(score / 10);
+        setCoinsEarned(coins);
+        const updatedProgress = updateGameStats(score);
+        addCoins(coins);
+        setProgress(updatedProgress);
+        
         if (USE_MOCK) {
           await endMockGameSession();
         } else {
           await endGameSession(sessionId, score, GameStatus.LOST);
         }
+        
+        // Show game over modal
+        setShowGameOver(true);
         return;
       }
 
@@ -158,8 +219,9 @@ export function GameBoard() {
         return next;
       });
 
-      // Update score
-      const newScore = score + cellsToReveal.length * POINTS_PER_CELL;
+      // Update score with multiplier
+      const pointsPerCell = calculatePointsPerCell(progress.upgrades.scoreMultiplier);
+      const newScore = score + cellsToReveal.length * pointsPerCell;
       setScore(newScore);
       
       // No win condition in infinite mode - game continues until mine is hit
@@ -169,7 +231,7 @@ export function GameBoard() {
         await updateGameScore(sessionId, newScore);
       }
     },
-    [gameStatus, sessionId, seed, mineDensity, score, cells, isFirstClick, viewportX, viewportY]
+    [gameStatus, sessionId, seed, mineDensity, score, cells, clickCount, safeClicksRemaining, viewportX, viewportY, secondChancesRemaining, progress]
   );
 
   const chordReveal = useCallback(
@@ -236,11 +298,12 @@ export function GameBoard() {
         return next;
       });
 
-      // Update score for correct flags
+      // Update score for correct flags with bonus
       if (!cellState.isFlagged) {
         const isMine = isMineAt(x, y, seed, mineDensity);
         if (isMine) {
-          const newScore = score + POINTS_PER_FLAG;
+          const pointsPerFlag = calculatePointsPerFlag(progress.upgrades.flagBonus);
+          const newScore = score + pointsPerFlag;
           setScore(newScore);
           if (USE_MOCK) {
             await updateMockGameScore();
@@ -250,23 +313,65 @@ export function GameBoard() {
         }
       }
     },
-    [gameStatus, sessionId, seed, mineDensity, score, cells]
+    [gameStatus, sessionId, seed, mineDensity, score, cells, progress]
   );
 
   const resetGame = useCallback(async () => {
+    const currentProgress = loadProgress();
+    
     const session = USE_MOCK
       ? await createMockGameSession()
       : await createGameSession();
     setSessionId(session.sessionId);
     setSeed(session.seed);
-    setMineDensity(session.mineDensity);
+    
+    // Reapply upgrades
+    const effectiveDensity = calculateMineDensity(currentProgress.upgrades.mineDensityReduction);
+    setMineDensity(effectiveDensity);
+    
+    const safeClicks = calculateSafeClicks(currentProgress.upgrades.safeZone);
+    setSafeClicksRemaining(safeClicks);
+    
+    const secondChances = calculateSecondChances(currentProgress.upgrades.secondChance);
+    setSecondChancesRemaining(secondChances);
+    
     setCells(new Map());
     setScore(0);
     setGameStatus(GameStatus.ACTIVE);
     setViewportX(-5);
     setViewportY(-5);
-    setIsFirstClick(true);
+    setClickCount(0);
+    setShowGameOver(false);
+    setShowUpgradeShop(false);
   }, []);
+
+  // Handle game over modal continue
+  const handleContinueToShop = () => {
+    setShowGameOver(false);
+    setShowUpgradeShop(true);
+  };
+
+  // Handle upgrade purchase
+  const handlePurchaseUpgrade = (upgradeId: keyof UpgradeLevels) => {
+    const upgrade = UPGRADES.find(u => u.id === upgradeId);
+    if (!upgrade) return;
+    
+    const currentLevel = progress.upgrades[upgradeId];
+    if (currentLevel >= upgrade.maxLevel) return;
+    
+    const cost = upgrade.costs[currentLevel];
+    const updatedProgress = purchaseUpgrade(upgradeId, cost);
+    
+    if (updatedProgress) {
+      setProgress(updatedProgress);
+    }
+  };
+
+  // Handle closing upgrade shop and starting new game
+  const handleCloseShop = () => {
+    setShowUpgradeShop(false);
+    resetGame();
+  };
 
   // Calculate total mines in viewport (approximate for infinite grid)
   const totalMinesInViewport = Math.floor(VIEWPORT_WIDTH * VIEWPORT_HEIGHT * mineDensity);
@@ -332,8 +437,10 @@ export function GameBoard() {
   }
 
   return (
-    <div className="flex flex-col items-center gap-4 p-4">
-      <div className="flex gap-4 items-center bg-gray-100 p-4 rounded-lg shadow-md">
+    <div className="flex flex-col items-center gap-4 p-4 w-full max-w-full overflow-hidden">
+      <ProgressHeader progress={progress} />
+      
+      <div className="flex flex-wrap justify-center gap-4 items-center bg-gray-100 p-4 rounded-lg shadow-md w-full max-w-2xl">
         <MineCounter 
           totalMines={totalMinesInViewport} 
           flaggedCount={flaggedInViewport} 
@@ -342,6 +449,14 @@ export function GameBoard() {
         <div className="text-xl font-bold" data-testid="score-display">
           Score: {score}
         </div>
+        
+        {secondChancesRemaining > 0 && (
+          <div className="flex items-center gap-2 bg-green-100 px-3 py-1 rounded border-2 border-green-400">
+            <span className="text-xl">💚</span>
+            <span className="font-bold text-green-700 hidden sm:inline">{secondChancesRemaining} Lives</span>
+            <span className="font-bold text-green-700 sm:hidden">{secondChancesRemaining}</span>
+          </div>
+        )}
         
         <button
           onClick={resetGame}
@@ -370,66 +485,68 @@ export function GameBoard() {
       <div className="flex gap-2 mb-2">
         <button
           onClick={() => setViewportY(viewportY - 5)}
-          className="px-3 py-1 bg-gray-200 rounded hover:bg-gray-300"
+          className="px-4 py-2 bg-gray-200 rounded hover:bg-gray-300 active:bg-gray-400 touch-manipulation"
           title="Move Up (W)"
         >
           ↑
         </button>
         <button
           onClick={() => setViewportY(viewportY + 5)}
-          className="px-3 py-1 bg-gray-200 rounded hover:bg-gray-300"
+          className="px-4 py-2 bg-gray-200 rounded hover:bg-gray-300 active:bg-gray-400 touch-manipulation"
           title="Move Down (S)"
         >
           ↓
         </button>
         <button
           onClick={() => setViewportX(viewportX - 5)}
-          className="px-3 py-1 bg-gray-200 rounded hover:bg-gray-300"
+          className="px-4 py-2 bg-gray-200 rounded hover:bg-gray-300 active:bg-gray-400 touch-manipulation"
           title="Move Left (A)"
         >
           ←
         </button>
         <button
           onClick={() => setViewportX(viewportX + 5)}
-          className="px-3 py-1 bg-gray-200 rounded hover:bg-gray-300"
+          className="px-4 py-2 bg-gray-200 rounded hover:bg-gray-300 active:bg-gray-400 touch-manipulation"
           title="Move Right (D)"
         >
           →
         </button>
       </div>
 
-      <div
-        className="inline-grid gap-0 border-4 border-gray-400 bg-gray-200 shadow-xl"
-        style={{
-          gridTemplateColumns: `repeat(${VIEWPORT_WIDTH}, minmax(0, 1fr))`,
-        }}
-        data-testid="game-board"
-      >
-        {Array.from({ length: VIEWPORT_HEIGHT }, (_, row) =>
-          Array.from({ length: VIEWPORT_WIDTH }, (_, col) => {
-            const x = viewportX + col;
-            const y = viewportY + row;
-            const getCellKey = (cx: number, cy: number) => `${cx},${cy}`;
-            const cellState = cells.get(getCellKey(x, y)) || { isRevealed: false, isFlagged: false };
-            const isMine = isMineAt(x, y, seed, mineDensity);
-            const adjacentMines = getAdjacentMines(x, y, seed, mineDensity);
+      <div className="w-full overflow-auto flex justify-center shadow-xl border-4 border-gray-400 bg-gray-200 max-w-[95vw]">
+        <div
+          className="inline-grid gap-0"
+          style={{
+            gridTemplateColumns: `repeat(${VIEWPORT_WIDTH}, minmax(0, 1fr))`,
+          }}
+          data-testid="game-board"
+        >
+          {Array.from({ length: VIEWPORT_HEIGHT }, (_, row) =>
+            Array.from({ length: VIEWPORT_WIDTH }, (_, col) => {
+              const x = viewportX + col;
+              const y = viewportY + row;
+              const getCellKey = (cx: number, cy: number) => `${cx},${cy}`;
+              const cellState = cells.get(getCellKey(x, y)) || { isRevealed: false, isFlagged: false };
+              const isMine = isMineAt(x, y, seed, mineDensity);
+              const adjacentMines = getAdjacentMines(x, y, seed, mineDensity);
 
-            return (
-              <Cell
-                key={getCellKey(x, y)}
-                x={x}
-                y={y}
-                isRevealed={cellState.isRevealed}
-                isFlagged={cellState.isFlagged}
-                isMine={isMine}
-                adjacentMines={adjacentMines}
-                onReveal={revealCell}
-                onFlag={toggleFlag}
-                onChord={chordReveal}
-              />
-            );
-          })
-        )}
+              return (
+                <Cell
+                  key={getCellKey(x, y)}
+                  x={x}
+                  y={y}
+                  isRevealed={cellState.isRevealed}
+                  isFlagged={cellState.isFlagged}
+                  isMine={isMine}
+                  adjacentMines={adjacentMines}
+                  onReveal={revealCell}
+                  onFlag={toggleFlag}
+                  onChord={chordReveal}
+                />
+              );
+            })
+          )}
+        </div>
       </div>
 
       <div className="text-sm text-gray-600 flex flex-col items-center gap-1">
@@ -438,6 +555,22 @@ export function GameBoard() {
           Use Arrow Keys or WASD to navigate • R to reset
         </div>
       </div>
+      
+      {showGameOver && (
+        <GameOverModal
+          finalScore={score}
+          coinsEarned={coinsEarned}
+          onContinue={handleContinueToShop}
+        />
+      )}
+      
+      {showUpgradeShop && (
+        <UpgradeShop
+          progress={progress}
+          onPurchase={handlePurchaseUpgrade}
+          onClose={handleCloseShop}
+        />
+      )}
     </div>
   );
 }

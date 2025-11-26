@@ -16,6 +16,32 @@ export enum CellAction {
   UNFLAG = 'UNFLAG',
 }
 
+// Progression System Types
+export interface PlayerProgress {
+  totalCoins: number;
+  lifetimeScore: number;
+  gamesPlayed: number;
+  upgrades: UpgradeLevels;
+}
+
+export interface UpgradeLevels {
+  mineDensityReduction: number; // 0-5
+  safeZone: number; // 0-4
+  scoreMultiplier: number; // 0-5
+  flagBonus: number; // 0-3
+  secondChance: number; // 0-2
+}
+
+export interface UpgradeDefinition {
+  id: keyof UpgradeLevels;
+  name: string;
+  description: string;
+  icon: string;
+  maxLevel: number;
+  costs: number[];
+  effects: string[];
+}
+
 /**
  * Game session data structure
  */
