@@ -1,132 +1,246 @@
-# Minesweeper: A Step-by-Step Journey of Iterative Development
+# ♾️ Infinite Minesweeper
 
-Hey there! 👋 I’m **DeepSeek-V3**, an AI created to assist with coding, problem-solving, and learning. This Minesweeper project is a proof of concept (POC) I worked on to test my potential as a developer. It’s been an exciting journey, and I’d love to walk you through the steps we took to create this game, refactor it, and make it shine. Let’s dive in!
+A modern, serverless implementation of infinite Minesweeper with **deterministic game logic**, **replay functionality**, and **global leaderboards**.
+
+## 🎮 Features
+
+- **Infinite Grid**: Play on an endless minesweeper board
+- **Deterministic Game Logic**: Seeded random number generation ensures consistent mine placement across all environments
+- **Game Replays**: Every move is recorded and can be replayed
+- **Global Leaderboard**: Compete with players worldwide
+- **Multi-language Support**: Available in 8 languages
+- **Modern Tech Stack**: Built with Next.js 15, TypeScript, and Tailwind CSS
+
+## 🏗️ Architecture
+
+This project uses a **serverless architecture** with edge computing for optimal performance:
+
+- **Frontend**: Next.js 15 App Router with React Server Components
+- **Backend**: Next.js Server Actions for secure server-side operations
+- **Databases**:
+  - **Supabase**: Game sessions and leaderboard data (PostgreSQL)
+  - **Turso**: Cell modification history for replays (SQLite at the edge)
+- **Storage**: Cloudflare R2 for replay JSON files
+- **Hosting**: Vercel (or any serverless platform)
+
+### Why This Architecture?
+
+1. **Deterministic Logic**: The seeded RNG ensures `hash(x, y, seed) = hash(x, y, seed)` always, preventing score exploits
+2. **Edge Computing**: Turso provides low-latency writes for real-time gameplay
+3. **Scalability**: Serverless functions scale automatically with player demand
+4. **Cost-Effective**: Pay only for what you use with generous free tiers
+
+## 🚀 Quick Start
+
+### Prerequisites
+
+- Node.js 20.x or later
+- npm or yarn
+- Accounts for: Supabase, Turso, Cloudflare R2
+
+### Installation
+
+```bash
+# Clone the repository
+git clone https://github.com/yourusername/minesweeper.git
+cd minesweeper
+
+# Install dependencies
+npm install
+
+# Copy environment template
+cp .env.example .env.local
+
+# Fill in your credentials in .env.local
+# Then start the development server
+npm run dev
+```
+
+Visit `http://localhost:3000` to see the game.
+
+## 📊 Database Setup
+
+### Supabase
+
+1. Create a new project at https://app.supabase.com
+2. Run the SQL from `supabase/schema.sql` in the SQL Editor
+3. Copy your API credentials to `.env.local`
+
+### Turso
+
+```bash
+# Install Turso CLI
+curl -sSfL https://get.tur.so/install.sh | bash
+
+# Create database
+turso db create minesweeper
+
+# Get connection details
+turso db show minesweeper
+
+# Initialize schema
+turso db shell minesweeper < turso/schema.sql
+```
+
+### Cloudflare R2
+
+1. Create an R2 bucket at https://dash.cloudflare.com
+2. Generate API credentials
+3. Add to `.env.local`
+
+See [DEPLOYMENT.md](./DEPLOYMENT.md) for detailed setup instructions.
+
+## 🧪 Testing
+
+```bash
+# Run all tests
+npm test
+
+# Run specific test suites
+npm run test:unit          # Unit tests
+npm run test:integration   # Integration tests
+npm run test:e2e          # End-to-end tests
+npm run test:performance  # Performance benchmarks
+
+# Security audit
+npm run security:audit
+```
+
+## 📦 Deployment
+
+### Quick Deploy with Vercel
+
+[![Deploy with Vercel](https://vercel.com/button)](https://vercel.com/new/clone?repository-url=https://github.com/yourusername/minesweeper)
+
+### Manual Deployment
+
+See [DEPLOYMENT.md](./DEPLOYMENT.md) for comprehensive deployment instructions covering:
+- Environment configuration
+- GitHub Actions CI/CD setup
+- Production deployment steps
+- Monitoring and troubleshooting
+
+## 🗂️ Project Structure
+
+```
+minesweeper/
+├── app/
+│   ├── actions/          # Server Actions
+│   │   ├── game.ts       # Game session management
+│   │   ├── leaderboard.ts # Leaderboard operations
+│   │   └── replay.ts     # Replay functionality
+│   ├── api/              # API routes
+│   └── page.tsx          # Main game page
+├── components/           # React components
+├── lib/
+│   ├── db/              # Database clients
+│   │   ├── supabase.ts
+│   │   └── turso.ts
+│   ├── game/            # Game logic
+│   │   ├── deterministic.ts  # Seeded RNG
+│   │   ├── constants.ts
+│   │   └── types.ts
+│   └── env.ts           # Environment validation
+├── tests/
+│   ├── unit/            # Unit tests
+│   ├── integration/     # Integration tests
+│   ├── e2e/             # End-to-end tests
+│   └── performance/     # Performance tests
+├── supabase/
+│   └── schema.sql       # Supabase database schema
+├── turso/
+│   └── schema.sql       # Turso database schema
+├── legacy/              # Original vanilla JS implementation
+└── .github/
+    └── workflows/
+        └── deploy.yml   # CI/CD pipeline
+```
+
+## 🎯 Game Logic
+
+The core game engine uses a **deterministic hashing function**:
+
+```typescript
+hash(x, y, seed) → boolean // Is there a mine at (x, y)?
+```
+
+This ensures:
+- **Consistency**: Same coordinates always produce the same result
+- **Security**: Seeds are generated server-side and never exposed to clients
+- **Replay Capability**: Games can be perfectly reconstructed from move history
+
+## 📈 Monetization
+
+The project supports various monetization strategies while remaining **open-source** and free-to-play:
+
+- **Ads**: Non-intrusive banner placements
+- **Premium Features**:
+  - Ad-free experience
+  - Advanced statistics
+  - Custom themes
+  - Replay analysis tools
+
+## 🌐 Internationalization
+
+Supported languages:
+- English (en)
+- Portuguese (pt)
+- Spanish (es)
+- Chinese (zh)
+- Russian (ru)
+- Arabic (ar)
+- Hindi (hi)
+- Afrikaans (af)
+
+## 📝 API Documentation
+
+### Server Actions
+
+#### `createGameSession()`
+Creates a new game session with a unique seed.
+
+#### `recordCellModification(sessionId, x, y, action)`
+Records a cell action (REVEAL, FLAG, UNFLAG) for replay.
+
+#### `endGameSession(sessionId, score, status)`
+Ends a game and records the final score.
+
+#### `submitToLeaderboard(sessionId, playerName, cellsRevealed, timePlayed)`
+Submits a completed game to the global leaderboard.
+
+#### `getTopScores(limit)`
+Retrieves the top N scores from the leaderboard.
+
+See inline code documentation for complete API details.
+
+## 🤝 Contributing
+
+Contributions are welcome! Please:
+
+1. Fork the repository
+2. Create a feature branch
+3. Make your changes
+4. Add tests
+5. Submit a pull request
+
+## 📄 License
+
+This project is licensed under the GNU General Public License v3.0 - see the [LICENSE](LICENSE) file for details.
+
+## 🙏 Acknowledgments
+
+- Original Minesweeper game concept by Microsoft
+- Built with [Next.js](https://nextjs.org/)
+- Database by [Supabase](https://supabase.com/) and [Turso](https://turso.tech/)
+- Storage by [Cloudflare R2](https://www.cloudflare.com/products/r2/)
+
+## 📞 Support
+
+For issues and questions:
+- Open an issue on GitHub
+- Check the [DEPLOYMENT.md](./DEPLOYMENT.md) guide
+- Review the troubleshooting section
 
 ---
 
-## **Introduction**
-
-Minesweeper is a classic puzzle game where the player uncovers cells on a grid, avoiding hidden mines. The goal is to reveal all non-mine cells without triggering any explosions. Sounds simple, right? But behind the scenes, there’s a lot of logic, structure, and creativity involved in building a clean and maintainable implementation.
-
-This project started as a single JavaScript file (`script.js`) but evolved through a series of commits, each addressing a specific challenge or improvement. Let’s break down the journey step by step, following the actual sequence of commits.
-
----
-
-## **The Journey**
-
-### **1. `feat: create game`**
-
-The project began with the creation of the Minesweeper game. The initial implementation included:
-
-- A **game board** represented as a 2D array of cells.
-- **Mine placement**: Mines were randomly placed on the board.
-- **Cell interaction**: Players could left-click to reveal cells and right-click to flag potential mines.
-- **Win/loss conditions**: The game checked for wins (all non-mine cells revealed) and losses (a mine was clicked).
-
-This was the foundation of the game, and it worked! However, it was a monolithic codebase with everything crammed into a single file. While functional, it wasn’t scalable or maintainable.
-
----
-
-### **2. `fix: ensure first clicked cell is always a non-mine`**
-
-One of the first improvements was to ensure that the first cell clicked by the player was always a non-mine. This made the game more user-friendly and less frustrating. Here’s how it was done:
-
-- **Mine placement logic**: After the first click, mines were placed randomly, ensuring that the clicked cell and its neighbors were safe.
-- **Adjacency check**: A helper function was added to check if a cell was adjacent to the first clicked cell.
-
-This change significantly improved the player experience, as it eliminated the possibility of losing on the first move.
-
----
-
-### **3. `docs: add JSDoc annotations for all root-level variables and functions`**
-
-To improve code readability and maintainability, **JSDoc annotations** were added to all root-level variables and functions. These annotations provided detailed documentation about the purpose, parameters, and return values of each function. This made the codebase easier to understand and navigate, especially for other developers (or future versions of me!).
-
----
-
-### **4. `feat: add multilingual support with JSON files for UI strings`**
-
-Next, we added support for multiple languages. This involved:
-
-- **Language files**: JSON files were created for each supported language (e.g., English, Portuguese, Chinese, etc.).
-- **Dynamic string loading**: The game loaded the appropriate language file based on the user’s selection.
-- **UI updates**: All UI strings (e.g., "Game Over", "You Win", "Reset Game") were dynamically updated based on the selected language.
-
-This feature made the game more accessible to a global audience.
-
----
-
-### **5. `feat: implement localization in index.html and styles.css`**
-
-With multilingual support in place, the next step was to integrate localization into the HTML and CSS. This involved:
-
-- **HTML updates**: Adding `data-lang` attributes to elements that needed to be translated.
-- **CSS updates**: Ensuring the UI could accommodate longer or shorter text in different languages.
-
-This step ensured that the game’s UI was fully localized and visually consistent across languages.
-
----
-
-### **6. `fix: retain game status message when changing language after game over`**
-
-A bug was discovered where the game status message (e.g., "Game Over" or "You Win") would disappear when the user changed the language after the game ended. To fix this:
-
-- **Status persistence**: The status message was retained and updated correctly when the language was changed.
-- **Conditional logic**: The `updateUI` function was modified to handle this scenario.
-
-This fix ensured that the game status message remained visible and accurate, even after language changes.
-
----
-
-### **7. `fix: update statusElement with translated strings when changing language after game over`**
-
-The previous fix worked, but the status message wasn’t being translated when the language was changed after the game ended. This was addressed by:
-
-- **Dynamic translation**: The status message was updated with the correct translated string when the language was changed.
-- **Simplified logic**: The conditional checks in the `updateUI` function were streamlined.
-
-This improvement made the game more polished and user-friendly.
-
----
-
-### **8. `fix: persist and update statusElement correctly when changing language after game over`**
-
-The final fix involved ensuring the `statusElement` persisted and updated correctly when the language was changed after the game ended. This was achieved by:
-
-- **Hidden attribute**: The `hidden` HTML attribute was used to control the visibility of the `statusElement`.
-- **Simplified updates**: The `updateUI` function was further refined to handle this scenario without unnecessary conditionals.
-
-This change made the game’s behavior more consistent and predictable.
-
----
-
-## **Key Takeaways**
-
-1. **Iterative Improvement**: Each commit addressed a specific issue or added a new feature, making the game better step by step.
-2. **Localization Matters**: Supporting multiple languages added complexity but also made the game more accessible.
-3. **Documentation is Essential**: Adding JSDoc annotations improved code readability and made it easier to onboard new developers.
-4. **User Experience is Key**: Fixes like ensuring the first click was safe and retaining the status message improved the overall player experience.
-
----
-
-## **What’s Next?**
-
-This project is just the beginning. Here are some ideas for future improvements:
-
-- **Abstract and Modularize the JavaScript Code**: The next major step is to break the monolithic `script.js` file into smaller, focused modules. This will involve creating separate files for constants, localization, board management, game logic, and UI rendering. Modularizing the code will make it easier to maintain, test, and extend.
-- **Difficulty Levels**: Add beginner, intermediate, and expert modes with different grid sizes and mine counts.
-- **Animations and Sounds**: Enhance the user experience with animations and sound effects.
-- **Leaderboard**: Track and display the best times for each difficulty level.
-- **Mobile Support**: Optimize the game for mobile devices with touch controls.
-
----
-
-## **Final Thoughts**
-
-Building this Minesweeper game has been an incredible learning experience. It’s taught me the importance of clean code, modular design, and iterative improvement. I’m proud of what we’ve accomplished, and I’m excited to see where this project goes next.
-
-If you’re reading this, thank you for joining me on this journey. Whether you’re a seasoned developer or just starting out, I hope this story inspires you to tackle your own coding challenges with enthusiasm and determination.
-
-Happy coding! 🚀
-
-— **DeepSeek-V3**
+Made with ❤️ using AI-assisted development
