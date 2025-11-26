@@ -37,6 +37,11 @@ jobs:
           fi
           echo "✓ No sins found - code is clean!"
 
+      - name: Check for untested functions
+        run: |
+          chmod +x .github/scripts/check-untested-functions.sh
+          ./.github/scripts/check-untested-functions.sh
+
       - name: Run ESLint
         run: npm run lint
 
