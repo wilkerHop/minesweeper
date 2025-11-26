@@ -21,6 +21,8 @@ import {
 import { CellAction, GameStatus } from '@/lib/game/types';
 import { useCallback, useEffect, useState } from 'react';
 import { Cell } from './Cell';
+import { GameTimer } from './GameTimer';
+import { MineCounter } from './MineCounter';
 
 // Use mock mode if environment variables aren't configured
 const USE_MOCK = typeof window !== 'undefined' && !process.env.NEXT_PUBLIC_SUPABASE_URL?.startsWith('https://');
@@ -260,7 +262,7 @@ export function GameBoard() {
     [gameStatus, sessionId, seed, mineDensity, score, cells]
   );
 
-  const resetGame = async () => {
+  const resetGame = useCallback(async () => {
     const session = USE_MOCK
       ? await createMockGameSession()
       : await createGameSession();
@@ -273,7 +275,62 @@ export function GameBoard() {
     setViewportX(-5);
     setViewportY(-5);
     setIsFirstClick(true);
-  };
+  }, []);
+
+  // Calculate total mines in viewport (approximate for infinite grid)
+  const totalMinesInViewport = Math.floor(VIEWPORT_WIDTH * VIEWPORT_HEIGHT * mineDensity);
+  
+  // Count flagged cells in current viewport
+  const flaggedInViewport = Array.from(cells.entries()).filter(([key, state]) => {
+    if (!state.isFlagged) return false;
+    const [cx, cy] = key.split(',').map(Number);
+    return (
+      cx >= viewportX && 
+      cx < viewportX + VIEWPORT_WIDTH && 
+      cy >= viewportY && 
+      cy < viewportY + VIEWPORT_HEIGHT
+    );
+  }).length;
+
+  // Keyboard controls
+  useEffect(() => {
+    const handleKeyPress = (e: KeyboardEvent) => {
+      // Prevent scrolling with arrows
+      if (['ArrowUp', 'ArrowDown', 'ArrowLeft', 'ArrowRight'].includes(e.key)) {
+        e.preventDefault();
+      }
+
+      switch(e.key) {
+        case 'ArrowUp':
+        case 'w':
+        case 'W':
+          setViewportY(y => y - 1);
+          break;
+        case 'ArrowDown':
+        case 's':
+        case 'S':
+          setViewportY(y => y + 1);
+          break;
+        case 'ArrowLeft':
+        case 'a':
+        case 'A':
+          setViewportX(x => x - 1);
+          break;
+        case 'ArrowRight':
+        case 'd':
+        case 'D':
+          setViewportX(x => x + 1);
+          break;
+        case 'r':
+        case 'R':
+          resetGame();
+          break;
+      }
+    };
+    
+    window.addEventListener('keydown', handleKeyPress);
+    return () => window.removeEventListener('keydown', handleKeyPress);
+  }, [resetGame]);
 
   if (isLoading) {
     return (
@@ -285,17 +342,27 @@ export function GameBoard() {
 
   return (
     <div className="flex flex-col items-center gap-4 p-4">
-      <div className="flex gap-4 items-center">
+      <div className="flex gap-4 items-center bg-gray-100 p-4 rounded-lg shadow-md">
+        <MineCounter 
+          totalMines={totalMinesInViewport} 
+          flaggedCount={flaggedInViewport} 
+        />
+        
         <div className="text-xl font-bold" data-testid="score-display">
           Score: {score}
         </div>
+        
         <button
           onClick={resetGame}
-          className="px-4 py-2 bg-blue-500 text-white rounded hover:bg-blue-600"
+          className="text-2xl hover:scale-110 transition-transform"
           data-testid="reset-button"
+          title="Reset Game (R)"
         >
-          New Game
+          {gameStatus === GameStatus.WON ? '😎' : 
+           gameStatus === GameStatus.LOST ? '😵' : '🙂'}
         </button>
+
+        <GameTimer key={sessionId || 'initial'} gameStatus={gameStatus} />
       </div>
 
       {gameStatus !== GameStatus.ACTIVE && (
@@ -312,32 +379,36 @@ export function GameBoard() {
       <div className="flex gap-2 mb-2">
         <button
           onClick={() => setViewportY(viewportY - 5)}
-          className="px-3 py-1 bg-gray-200 rounded"
+          className="px-3 py-1 bg-gray-200 rounded hover:bg-gray-300"
+          title="Move Up (W)"
         >
           ↑
         </button>
         <button
           onClick={() => setViewportY(viewportY + 5)}
-          className="px-3 py-1 bg-gray-200 rounded"
+          className="px-3 py-1 bg-gray-200 rounded hover:bg-gray-300"
+          title="Move Down (S)"
         >
           ↓
         </button>
         <button
           onClick={() => setViewportX(viewportX - 5)}
-          className="px-3 py-1 bg-gray-200 rounded"
+          className="px-3 py-1 bg-gray-200 rounded hover:bg-gray-300"
+          title="Move Left (A)"
         >
           ←
         </button>
         <button
           onClick={() => setViewportX(viewportX + 5)}
-          className="px-3 py-1 bg-gray-200 rounded"
+          className="px-3 py-1 bg-gray-200 rounded hover:bg-gray-300"
+          title="Move Right (D)"
         >
           →
         </button>
       </div>
 
       <div
-        className="inline-grid gap-0 border-2 border-gray-800"
+        className="inline-grid gap-0 border-4 border-gray-400 bg-gray-200 shadow-xl"
         style={{
           gridTemplateColumns: `repeat(${VIEWPORT_WIDTH}, minmax(0, 1fr))`,
         }}
@@ -370,9 +441,11 @@ export function GameBoard() {
         )}
       </div>
 
-      <div className="text-sm text-gray-600">
-        Viewport: ({viewportX}, {viewportY}) | Use arrow buttons to navigate the
-        infinite grid
+      <div className="text-sm text-gray-600 flex flex-col items-center gap-1">
+        <div>Viewport: ({viewportX}, {viewportY})</div>
+        <div className="text-xs text-gray-500">
+          Use Arrow Keys or WASD to navigate • R to reset
+        </div>
       </div>
     </div>
   );
