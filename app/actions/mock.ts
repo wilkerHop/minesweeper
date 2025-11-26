@@ -1,5 +1,4 @@
 // Mock environment for local development when databases aren't configured
-const USE_MOCK_MODE = process.env.NEXT_PUBLIC_USE_MOCK === 'true';
 
 let mockSessionCounter = 0;
 
