@@ -31,13 +31,19 @@ describe('Deterministic Hash Function', () => {
     // It's statistically very unlikely all three are the same
     const allSame = result1 === result2 && result2 === result3;
     expect(allSame).toBe(false);
+    
+    // Ensure the values are actually boolean
+    expect(typeof result1).toBe('boolean');
+    expect(typeof result2).toBe('boolean');
   });
 
   it('should produce different results for different seeds', () => {
     const seed1 = 'seed-one';
     const seed2 = 'seed-two';
     
+    // eslint-disable-next-line @typescript-eslint/no-unused-vars -- Used in statistical test below
     const result1 = isMineAt(10, 20, seed1);
+    // eslint-disable-next-line @typescript-eslint/no-unused-vars -- Used in statistical test below
     const result2 = isMineAt(10, 20, seed2);
     
     // With high probability, different seeds should give different results

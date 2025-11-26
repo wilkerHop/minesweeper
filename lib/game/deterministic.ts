@@ -36,7 +36,8 @@ export function generateSeed(): string {
     throw new Error('generateSeed() must be called server-side only');
   }
   
-  const crypto = require('crypto');
+  // eslint-disable-next-line @typescript-eslint/no-require-imports -- Server-side only, required for crypto module
+  const crypto = require('crypto') as typeof import('crypto');
   return crypto.randomBytes(32).toString('hex');
 }
 

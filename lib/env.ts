@@ -51,7 +51,7 @@ try {
     R2_ACCESS_KEY_ID: process.env.R2_ACCESS_KEY_ID || 'placeholder',
     R2_SECRET_ACCESS_KEY: process.env.R2_SECRET_ACCESS_KEY || 'placeholder',
     R2_BUCKET_NAME: process.env.R2_BUCKET_NAME || 'placeholder',
-    NODE_ENV: (process.env.NODE_ENV as any) || 'development',
+    NODE_ENV: (process.env.NODE_ENV as 'development' | 'production' | 'test') || 'development',
     NEXT_PUBLIC_APP_URL: process.env.NEXT_PUBLIC_APP_URL || 'http://localhost:3000',
   };
 }
