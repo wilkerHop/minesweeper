@@ -55,11 +55,13 @@ jobs:
           R2_BUCKET_NAME: ${{ secrets.R2_BUCKET_NAME || 'dummy' }}
 
       - name: Upload build artifacts
+        if: always()
         uses: actions/upload-artifact@v4
         with:
           name: build-output
           path: .next
           retention-days: 1
+          if-no-files-found: ignore
 
   # Stage 2: Test
   test:
@@ -101,6 +103,7 @@ jobs:
           name: test-results
           path: coverage/
           retention-days: 7
+          if-no-files-found: ignore
 
   # Stage 3: Deploy to Staging (Vercel Preview)
   deploy-staging:
