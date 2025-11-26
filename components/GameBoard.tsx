@@ -6,6 +6,12 @@ import {
   recordCellModification,
   updateGameScore,
 } from '@/app/actions/game';
+import {
+  createMockGameSession,
+  endMockGameSession,
+  recordMockCellModification,
+  updateMockGameScore,
+} from '@/app/actions/mock';
 import { POINTS_PER_CELL, POINTS_PER_FLAG } from '@/lib/game/constants';
 import {
   getAdjacentMines,
