@@ -16,6 +16,9 @@ import { CellAction, GameStatus } from '@/lib/game/types';
 import { useCallback, useEffect, useState } from 'react';
 import { Cell } from './Cell';
 
+// Use mock mode if environment variables aren't configured
+const USE_MOCK = typeof window !== 'undefined' && !process.env.NEXT_PUBLIC_SUPABASE_URL?.startsWith('https://');
+
 interface CellState {
   isRevealed: boolean;
   isFlagged: boolean;
@@ -39,25 +42,25 @@ export function GameBoard() {
   useEffect(() => {
     async function initGame() {
       try {
-        const session = await createGameSession();
+        const session = USE_MOCK 
+          ? await createMockGameSession()
+          : await createGameSession();
         setSessionId(session.sessionId);
         setSeed(session.seed);
         setMineDensity(session.mineDensity);
         setIsLoading(false);
       } catch (error) {
         console.error('Failed to initialize game:', error);
+        // Fallback to mock mode if real initialization fails
+        const session = await createMockGameSession();
+        setSessionId(session.sessionId);
+        setSeed(session.seed);
+        setMineDensity(session.mineDensity);
+        setIsLoading(false);
       }
     }
     initGame();
   }, []);
-
-  const getCellKey = (x: number, y: number) => `${x},${y}`;
-
-  // This function is no longer needed as its logic is inlined into useCallback hooks
-  // const getCellState = (x: number, y: number): CellState => {
-  //   const key = getCellKey(x, y);
-  //   return cells.get(key) || { isRevealed: false, isFlagged: false };
-  // };
 
   const revealCell = useCallback(
     async (x: number, y: number) => {
@@ -72,7 +75,11 @@ export function GameBoard() {
       const isMine = isMineAt(x, y, seed, mineDensity);
 
       // Record the cell modification
-      await recordCellModification(sessionId, x, y, CellAction.REVEAL);
+      if (USE_MOCK) {
+        await recordMockCellModification();
+      } else {
+        await recordCellModification(sessionId, x, y, CellAction.REVEAL);
+      }
 
       if (isMine) {
         // Game over
@@ -82,7 +89,11 @@ export function GameBoard() {
           return next;
         });
         setGameStatus(GameStatus.LOST);
-        await endGameSession(sessionId, score, GameStatus.LOST);
+        if (USE_MOCK) {
+          await endMockGameSession();
+        } else {
+          await endGameSession(sessionId, score, GameStatus.LOST);
+        }
         return;
       }
 
@@ -109,9 +120,13 @@ export function GameBoard() {
       // Update score
       const newScore = score + cellsToReveal.length * POINTS_PER_CELL;
       setScore(newScore);
-      await updateGameScore(sessionId, newScore);
+      if (USE_MOCK) {
+        await updateMockGameScore();
+      } else {
+        await updateGameScore(sessionId, newScore);
+      }
     },
-    [gameStatus, sessionId, seed, mineDensity, score]
+    [gameStatus, sessionId, seed, mineDensity, score, cells]
   );
 
   const toggleFlag = useCallback(
@@ -125,7 +140,11 @@ export function GameBoard() {
       if (cellState.isRevealed) return;
 
       const action = cellState.isFlagged ? CellAction.UNFLAG : CellAction.FLAG;
-      await recordCellModification(sessionId, x, y, action);
+      if (USE_MOCK) {
+        await recordMockCellModification();
+      } else {
+        await recordCellModification(sessionId, x, y, action);
+      }
 
       setCells((prev) => {
         const next = new Map(prev);
@@ -142,7 +161,11 @@ export function GameBoard() {
         if (isMine) {
           const newScore = score + POINTS_PER_FLAG;
           setScore(newScore);
-          await updateGameScore(sessionId, newScore);
+          if (USE_MOCK) {
+            await updateMockGameScore();
+          } else {
+            await updateGameScore(sessionId, newScore);
+          }
         }
       }
     },
@@ -150,7 +173,9 @@ export function GameBoard() {
   );
 
   const resetGame = async () => {
-    const session = await createGameSession();
+    const session = USE_MOCK
+      ? await createMockGameSession()
+      : await createGameSession();
     setSessionId(session.sessionId);
     setSeed(session.seed);
     setMineDensity(session.mineDensity);
