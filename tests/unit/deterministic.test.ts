@@ -1,8 +1,8 @@
 import {
-  getAdjacentMines,
-  getFloodFillCells,
-  isMineAt,
-  validateDeterminism,
+    getAdjacentMines,
+    getFloodFillCells,
+    isMineAt,
+    validateDeterminism,
 } from '@/lib/game/deterministic';
 import { describe, expect, it } from 'vitest';
 
@@ -66,8 +66,9 @@ describe('Deterministic Hash Function', () => {
     let mineCount = 0;
     
     for (let i = 0; i < samples; i++) {
-      const x = i % 100;
-      const y = Math.floor(i / 100);
+      // Keep coordinates within Safe Haven (distance < 50) to test base density
+      const x = i % 30;
+      const y = Math.floor(i / 30) % 30;
       if (isMineAt(x, y, testSeed, density)) {
         mineCount++;
       }

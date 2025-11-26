@@ -1,38 +1,34 @@
+import crypto from 'crypto';
 import { DEFAULT_MINE_DENSITY } from './constants';
 
 /**
- * Seeded Pseudo-Random Number Generator using Mulberry32
- * This ensures deterministic mine placement across all environments
- * 
- * @param seed - String seed to initialize the generator
- * @returns A function that generates pseudo-random numbers between 0 and 1
+ * Converts a string to a 32-bit integer seed
  */
-function createSeededRNG(seed: string): () => number {
-  // Convert string seed to a 32-bit hash
+function stringToSeed(str: string): number {
   let hash = 0;
-  for (let i = 0; i < seed.length; i++) {
-    const char = seed.charCodeAt(i);
+  for (let i = 0; i < str.length; i++) {
+    const char = str.charCodeAt(i);
     hash = ((hash << 5) - hash) + char;
     hash = hash & hash; // Convert to 32-bit integer
   }
-  
-  // Mulberry32 algorithm
-  return function(): number {
-    hash = hash + 0x6D2B79F5 | 0;
-    let t = Math.imul(hash ^ hash >>> 15, 1 | hash);
-    t = t + Math.imul(t ^ t >>> 7, 61 | t) ^ t;
-    return ((t ^ t >>> 14) >>> 0) / 4294967296;
-  };
+  return hash;
 }
 
-// Import crypto at the top level for server-side usage
-import crypto from 'crypto';
+/**
+ * Mulberry32 PRNG
+ */
+function mulberry32(a: number): () => number {
+  return function() {
+    let t = a += 0x6D2B79F5;
+    t = Math.imul(t ^ t >>> 15, t | 1);
+    t ^= t + Math.imul(t ^ t >>> 7, t | 61);
+    return ((t ^ t >>> 14) >>> 0) / 4294967296;
+  }
+}
 
 /**
  * Generates a cryptographically secure random seed
  * This is server-side only to prevent client manipulation
- * 
- * @returns A random seed string
  */
 export function generateSeed(): string {
   if (typeof window !== 'undefined') {
@@ -42,129 +38,125 @@ export function generateSeed(): string {
   return crypto.randomBytes(32).toString('hex');
 }
 
-/**
- * Deterministic hash function for mine placement
- * Ensures hash(x, y, seed) = hash(x, y, seed) across all environments
- * 
- * @param x - X coordinate
- * @param y - Y coordinate
- * @param seed - Game seed
- * @param mineDensity - Probability of a cell being a mine (0-1)
- * @returns true if the cell is a mine, false otherwise
- */
-export function isMineAt(
-  x: number,
-  y: number,
-  seed: string,
-  mineDensity: number = DEFAULT_MINE_DENSITY
-): boolean {
-  // Create a unique seed for this specific cell
-  const cellSeed = `${seed}-${x}-${y}`;
-  const rng = createSeededRNG(cellSeed);
-  
-  // Generate a random value and compare against mine density
-  return rng() < mineDensity;
+export enum Biome {
+  SAFE_HAVEN = 'SAFE_HAVEN',
+  WASTELAND = 'WASTELAND',
+  VOID = 'VOID',
+  MINEFIELD = 'MINEFIELD',
+}
+
+export function getBiome(x: number, y: number): Biome {
+  const distance = Math.sqrt(x * x + y * y);
+
+  if (distance < 50) return Biome.SAFE_HAVEN;
+  if (distance < 100) return Biome.WASTELAND;
+  if (distance < 200) return Biome.VOID;
+  return Biome.MINEFIELD;
+}
+
+export function getBiomeDensity(x: number, y: number, baseDensity: number): number {
+  const biome = getBiome(x, y);
+
+  switch (biome) {
+    case Biome.SAFE_HAVEN:
+      return baseDensity;
+    case Biome.WASTELAND:
+      return Math.min(0.9, baseDensity * 1.2); // +20%
+    case Biome.VOID:
+      return Math.min(0.9, baseDensity * 1.5); // +50%
+    case Biome.MINEFIELD:
+      return Math.min(0.9, baseDensity * 2.0); // +100%
+  }
 }
 
 /**
- * Counts the number of adjacent mines for a given cell
- * 
- * @param x - X coordinate
- * @param y - Y coordinate
- * @param seed - Game seed
- * @param mineDensity - Mine density
- * @returns Number of adjacent mines (0-8)
+ * Determines if a mine exists at the given coordinates using a seeded random number generator.
+ * Now incorporates Biome logic for dynamic density.
  */
-export function getAdjacentMines(
-  x: number,
-  y: number,
-  seed: string,
-  mineDensity: number = DEFAULT_MINE_DENSITY
-): number {
-  let count = 0;
+export function isMineAt(x: number, y: number, seed: string, baseDensity: number = DEFAULT_MINE_DENSITY): boolean {
+  // Create a unique seed for this coordinate
+  const coordSeed = `${seed}:${x},${y}`;
   
-  // Check all 8 adjacent cells
+  // Create a new RNG instance for this specific cell
+  const rng = mulberry32(stringToSeed(coordSeed));
+  
+  // Generate a random number between 0 and 1
+  const randomValue = rng();
+  
+  // Calculate dynamic density based on biome
+  const effectiveDensity = getBiomeDensity(x, y, baseDensity);
+  
+  // If the random value is less than the density, it's a mine
+  return randomValue < effectiveDensity;
+}
+
+/**
+ * Counts the number of adjacent mines for a given cell.
+ */
+export function getAdjacentMines(x: number, y: number, seed: string, baseDensity: number = DEFAULT_MINE_DENSITY): number {
+  let count = 0;
+
   for (let dx = -1; dx <= 1; dx++) {
     for (let dy = -1; dy <= 1; dy++) {
       // Skip the center cell
       if (dx === 0 && dy === 0) continue;
-      
-      const adjX = x + dx;
-      const adjY = y + dy;
-      
-      if (isMineAt(adjX, adjY, seed, mineDensity)) {
+
+      if (isMineAt(x + dx, y + dy, seed, baseDensity)) {
         count++;
       }
     }
   }
-  
+
   return count;
 }
 
 /**
- * Gets the cells to reveal when a cell with 0 adjacent mines is clicked
- * Uses flood fill algorithm with a maximum limit to prevent excessive computation
- * 
- * @param x - Starting X coordinate
- * @param y - Starting Y coordinate
- * @param seed - Game seed
- * @param mineDensity - Mine density
- * @param maxCells - Maximum number of cells to reveal
- * @returns Array of [x, y] coordinates to reveal
+ * Performs a flood fill to find all connected empty cells (0 adjacent mines)
+ * starting from the given coordinates.
+ * Returns an array of [x, y] coordinates to reveal.
  */
-export function getFloodFillCells(
-  x: number,
-  y: number,
-  seed: string,
-  mineDensity: number = DEFAULT_MINE_DENSITY,
-  maxCells: number = 1000
-): [number, number][] {
-  const toReveal: [number, number][] = [];
+export function getFloodFillCells(startX: number, startY: number, seed: string, baseDensity: number = DEFAULT_MINE_DENSITY, maxCells: number = 200): [number, number][] {
   const visited = new Set<string>();
-  const queue: [number, number][] = [[x, y]];
-  
-  while (queue.length > 0 && toReveal.length < maxCells) {
-    const [currentX, currentY] = queue.shift()!;
-    const key = `${currentX},${currentY}`;
-    
+  const queue: [number, number][] = [[startX, startY]];
+  const result: [number, number][] = [];
+
+  // Safety limit to prevent infinite loops or massive memory usage
+  const MAX_REVEAL = maxCells;
+
+  while (queue.length > 0 && result.length < MAX_REVEAL) {
+    const [x, y] = queue.shift()!;
+    const key = `${x},${y}`;
+
     if (visited.has(key)) continue;
     visited.add(key);
-    
-    // Don't reveal mines
-    if (isMineAt(currentX, currentY, seed, mineDensity)) continue;
-    
-    toReveal.push([currentX, currentY]);
-    
-    const adjacentMines = getAdjacentMines(currentX, currentY, seed, mineDensity);
-    
-    // Only continue flood fill if there are no adjacent mines
+    result.push([x, y]);
+
+    const adjacentMines = getAdjacentMines(x, y, seed, baseDensity);
+
+    // If this cell has no adjacent mines, we can continue expanding
     if (adjacentMines === 0) {
       for (let dx = -1; dx <= 1; dx++) {
         for (let dy = -1; dy <= 1; dy++) {
           if (dx === 0 && dy === 0) continue;
-          
-          const newX = currentX + dx;
-          const newY = currentY + dy;
-          const newKey = `${newX},${newY}`;
-          
-          if (!visited.has(newKey)) {
-            queue.push([newX, newY]);
+
+          const nx = x + dx;
+          const ny = y + dy;
+          const nKey = `${nx},${ny}`;
+
+          if (!visited.has(nKey)) {
+            queue.push([nx, ny]);
           }
         }
       }
     }
   }
   
-  return toReveal;
+  return result;
 }
 
 /**
  * Validates that the deterministic hash function works correctly
  * This is used in tests to ensure hash(A) = hash(A)
- * 
- * @param seed - Test seed
- * @param iterations - Number of iterations to test
- * @returns true if all iterations produce consistent results
  */
 export function validateDeterminism(seed: string, iterations: number = 100): boolean {
   const testCases: Array<[number, number]> = [];

@@ -14,6 +14,7 @@ import {
 } from '@/app/actions/mock';
 import {
     getAdjacentMines,
+    getBiome,
     getFloodFillCells,
     isMineAt,
 } from '@/lib/game/deterministic';
@@ -33,11 +34,11 @@ import {
     updateGameStats
 } from '@/lib/services/progressStorage';
 import { useCallback, useEffect, useState } from 'react';
+import { BrutalCard } from './BrutalCard';
 import { Cell } from './Cell';
 import { GameOverModal } from './GameOverModal';
 import { GameTimer } from './GameTimer';
-import { MineCounter } from './MineCounter';
-import { ProgressHeader } from './ProgressHeader';
+import { Leaderboard } from './Leaderboard';
 import { UpgradeShop } from './UpgradeShop';
 
 // Use mock mode if environment variables aren't configured
@@ -63,6 +64,7 @@ export function GameBoard() {
   const [progress, setProgress] = useState<PlayerProgress>(loadProgress());
   const [showGameOver, setShowGameOver] = useState(false);
   const [showUpgradeShop, setShowUpgradeShop] = useState(false);
+  const [showLeaderboard, setShowLeaderboard] = useState(false);
   const [coinsEarned, setCoinsEarned] = useState(0);
   const [safeClicksRemaining, setSafeClicksRemaining] = useState(1);
   const [secondChancesRemaining, setSecondChancesRemaining] = useState(0);
@@ -437,125 +439,157 @@ export function GameBoard() {
   }
 
   return (
-    <div className="flex flex-col items-center gap-4 p-4 w-full max-w-full overflow-hidden">
-      <ProgressHeader progress={progress} />
-      
-      <div className="flex flex-wrap justify-center gap-4 items-center bg-gray-100 p-4 rounded-lg shadow-md w-full max-w-2xl">
-        <MineCounter 
-          totalMines={totalMinesInViewport} 
-          flaggedCount={flaggedInViewport} 
-        />
+    <div className="min-h-screen bg-background p-4 sm:p-8 font-mono text-foreground selection:bg-neon-green selection:text-void">
+      <div className="max-w-7xl mx-auto grid grid-cols-1 lg:grid-cols-12 gap-6">
         
-        <div className="text-xl font-bold" data-testid="score-display">
-          Score: {score}
-        </div>
-        
-        {secondChancesRemaining > 0 && (
-          <div className="flex items-center gap-2 bg-green-100 px-3 py-1 rounded border-2 border-green-400">
-            <span className="text-xl">💚</span>
-            <span className="font-bold text-green-700 hidden sm:inline">{secondChancesRemaining} Lives</span>
-            <span className="font-bold text-green-700 sm:hidden">{secondChancesRemaining}</span>
-          </div>
-        )}
-        
-        <button
-          onClick={resetGame}
-          className="text-2xl hover:scale-110 transition-transform"
-          data-testid="reset-button"
-          title="Reset Game (R)"
-        >
-          {gameStatus === GameStatus.WON ? '😎' : 
-           gameStatus === GameStatus.LOST ? '😵' : '🙂'}
-        </button>
+        {/* Header / Stats Row */}
+        <div className="lg:col-span-12 grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
+          <BrutalCard title="COINS" icon="🪙" className="border-neon-green">
+            <div className="text-3xl font-bold text-neon-green">{progress.totalCoins}</div>
+            <div className="text-xs text-neon-green/80 mt-1 uppercase tracking-wider">Total Earnings</div>
+          </BrutalCard>
+          
+          <BrutalCard title="SCORE" icon="⭐">
+            <div className="text-3xl font-bold text-white">{score}</div>
+            <div className="text-xs text-gray-500 mt-1 uppercase tracking-wider">Current Run</div>
+          </BrutalCard>
+          
+          <BrutalCard title="MINES" icon="💣">
+            <div className="flex items-baseline gap-2">
+              <span className="text-3xl font-bold text-danger-red">{totalMinesInViewport - flaggedInViewport}</span>
+              <span className="text-xs text-gray-500 uppercase tracking-wider">/ {totalMinesInViewport} DETECTED</span>
+            </div>
+          </BrutalCard>
 
-        <GameTimer key={sessionId || 'initial'} gameStatus={gameStatus} />
+          <BrutalCard title="TIME" icon="⏱️">
+             <GameTimer key={sessionId || 'initial'} gameStatus={gameStatus} />
+          </BrutalCard>
+        </div>
+
+        {/* Main Game Area */}
+        <div className="lg:col-span-9 flex flex-col gap-6">
+          <BrutalCard className="flex-1 min-h-[600px] relative overflow-hidden bg-void border-white">
+            {/* Game Status Overlay */}
+            {gameStatus !== GameStatus.ACTIVE && (
+              <div className="absolute inset-0 z-10 flex items-center justify-center bg-black/80 backdrop-blur-sm">
+                <div className={`text-5xl font-bold font-mono uppercase tracking-widest ${
+                  gameStatus === GameStatus.WON ? 'text-neon-green animate-pulse' : 'text-danger-red animate-glitch'
+                }`}>
+                  {gameStatus === GameStatus.WON ? '>> MISSION COMPLETE <<' : '>> SYSTEM FAILURE <<'}
+                </div>
+              </div>
+            )}
+
+            {/* Viewport Controls Overlay */}
+            <div className="absolute bottom-6 right-6 z-20 flex flex-col gap-2 bg-black border-2 border-white p-2 shadow-[4px_4px_0px_0px_rgba(255,255,255,1)]">
+              <button onClick={() => setViewportY(viewportY - 5)} className="p-3 hover:bg-hacker-grey text-white transition-colors border border-white/20">↑</button>
+              <div className="flex gap-2">
+                <button onClick={() => setViewportX(viewportX - 5)} className="p-3 hover:bg-hacker-grey text-white transition-colors border border-white/20">←</button>
+                <button onClick={() => setViewportY(viewportY + 5)} className="p-3 hover:bg-hacker-grey text-white transition-colors border border-white/20">↓</button>
+                <button onClick={() => setViewportX(viewportX + 5)} className="p-3 hover:bg-hacker-grey text-white transition-colors border border-white/20">→</button>
+              </div>
+            </div>
+
+            {/* The Grid */}
+            <div className="w-full h-full overflow-auto flex items-center justify-center bg-void">
+               <div
+                className="inline-grid gap-[1px] bg-hacker-grey border-2 border-white shadow-[8px_8px_0px_0px_rgba(255,0,0,0.5)]"
+                style={{
+                  gridTemplateColumns: `repeat(${VIEWPORT_WIDTH}, minmax(0, 1fr))`,
+                }}
+                data-testid="game-board"
+              >
+                {Array.from({ length: VIEWPORT_HEIGHT }, (_, row) =>
+                  Array.from({ length: VIEWPORT_WIDTH }, (_, col) => {
+                    const x = viewportX + col;
+                    const y = viewportY + row;
+                    const getCellKey = (cx: number, cy: number) => `${cx},${cy}`;
+                    const cellState = cells.get(getCellKey(x, y)) || { isRevealed: false, isFlagged: false };
+                    const isMine = isMineAt(x, y, seed, mineDensity);
+                    const adjacentMines = getAdjacentMines(x, y, seed, mineDensity);
+                    const biome = getBiome(x, y);
+
+                    return (
+                      <Cell
+                        key={getCellKey(x, y)}
+                        x={x}
+                        y={y}
+                        isRevealed={cellState.isRevealed}
+                        isFlagged={cellState.isFlagged}
+                        isMine={isMine}
+                        adjacentMines={adjacentMines}
+                        biome={biome}
+                        onReveal={revealCell}
+                        onFlag={toggleFlag}
+                        onChord={chordReveal}
+                      />
+                    );
+                  })
+                )}
+              </div>
+            </div>
+          </BrutalCard>
+        </div>
+
+        {/* Sidebar / Controls */}
+        <div className="lg:col-span-3 flex flex-col gap-6">
+          <BrutalCard title="ACTIONS" icon="⚡">
+             <div className="flex flex-col gap-3">
+               <button
+                onClick={resetGame}
+                className="w-full py-4 bg-white text-black border-2 border-black font-bold hover:bg-neon-green hover:border-transparent transition-all active:translate-x-1 active:translate-y-1 shadow-[4px_4px_0px_0px_rgba(0,0,0,1)] flex items-center justify-center gap-2 uppercase tracking-widest"
+                data-testid="reset-button"
+              >
+                <span>🔄</span> REBOOT
+              </button>
+              
+              <button
+                onClick={() => setShowLeaderboard(true)}
+                className="w-full py-3 bg-hacker-grey text-white font-bold hover:bg-white hover:text-black transition-colors uppercase tracking-widest border border-white/20 text-xs"
+              >
+                🏆 VIEW RANKINGS
+              </button>
+             </div>
+          </BrutalCard>
+
+          <BrutalCard title="UPGRADES" icon="🛒" className="flex-1">
+             <div className="space-y-4">
+                <div className="p-4 bg-hacker-grey border-2 border-white/20">
+                    <div className="text-xs text-neon-green mb-2 uppercase tracking-widest border-b border-neon-green/30 pb-1">Active Modules</div>
+                    <div className="flex flex-wrap gap-2">
+                        {secondChancesRemaining > 0 && (
+                             <span className="px-2 py-1 bg-black text-neon-green text-xs font-bold border border-neon-green flex items-center gap-1 uppercase">
+                                💚 {secondChancesRemaining} LIVES
+                             </span>
+                        )}
+                        {safeClicksRemaining > 0 && (
+                            <span className="px-2 py-1 bg-black text-white text-xs font-bold border border-white flex items-center gap-1 uppercase">
+                                🛡️ {safeClicksRemaining} SAFE
+                            </span>
+                        )}
+                    </div>
+                </div>
+                
+                <button 
+                    onClick={() => setShowUpgradeShop(true)}
+                    className="w-full py-3 bg-black border-2 border-neon-green text-neon-green font-bold hover:bg-neon-green hover:text-black transition-all uppercase tracking-widest"
+                >
+                    ACCESS SHOP
+                </button>
+             </div>
+          </BrutalCard>
+          
+          <BrutalCard className="bg-black text-white border-white">
+             <div className="text-xs text-neon-green uppercase tracking-widest font-bold mb-2 border-b border-neon-green pb-1">TERMINAL COMMANDS</div>
+             <div className="space-y-2 text-xs font-mono text-gray-300">
+                <div className="flex justify-between"><span>NAVIGATE</span> <span className="bg-hacker-grey px-1 text-white">WASD</span></div>
+                <div className="flex justify-between"><span>REBOOT</span> <span className="bg-hacker-grey px-1 text-white">R</span></div>
+                <div className="flex justify-between"><span>FLAG</span> <span className="bg-hacker-grey px-1 text-white">R-CLICK</span></div>
+             </div>
+          </BrutalCard>
+        </div>
       </div>
 
-      {gameStatus !== GameStatus.ACTIVE && (
-        <div
-          className={`text-2xl font-bold ${
-            gameStatus === GameStatus.WON ? 'text-green-600' : 'text-red-600'
-          }`}
-          data-testid="game-status"
-        >
-          {gameStatus === GameStatus.WON ? '🎉 You Won!' : '💥 Game Over!'}
-        </div>
-      )}
-
-      <div className="flex gap-2 mb-2">
-        <button
-          onClick={() => setViewportY(viewportY - 5)}
-          className="px-4 py-2 bg-gray-200 rounded hover:bg-gray-300 active:bg-gray-400 touch-manipulation"
-          title="Move Up (W)"
-        >
-          ↑
-        </button>
-        <button
-          onClick={() => setViewportY(viewportY + 5)}
-          className="px-4 py-2 bg-gray-200 rounded hover:bg-gray-300 active:bg-gray-400 touch-manipulation"
-          title="Move Down (S)"
-        >
-          ↓
-        </button>
-        <button
-          onClick={() => setViewportX(viewportX - 5)}
-          className="px-4 py-2 bg-gray-200 rounded hover:bg-gray-300 active:bg-gray-400 touch-manipulation"
-          title="Move Left (A)"
-        >
-          ←
-        </button>
-        <button
-          onClick={() => setViewportX(viewportX + 5)}
-          className="px-4 py-2 bg-gray-200 rounded hover:bg-gray-300 active:bg-gray-400 touch-manipulation"
-          title="Move Right (D)"
-        >
-          →
-        </button>
-      </div>
-
-      <div className="w-full overflow-auto flex justify-center shadow-xl border-4 border-gray-400 bg-gray-200 max-w-[95vw]">
-        <div
-          className="inline-grid gap-0"
-          style={{
-            gridTemplateColumns: `repeat(${VIEWPORT_WIDTH}, minmax(0, 1fr))`,
-          }}
-          data-testid="game-board"
-        >
-          {Array.from({ length: VIEWPORT_HEIGHT }, (_, row) =>
-            Array.from({ length: VIEWPORT_WIDTH }, (_, col) => {
-              const x = viewportX + col;
-              const y = viewportY + row;
-              const getCellKey = (cx: number, cy: number) => `${cx},${cy}`;
-              const cellState = cells.get(getCellKey(x, y)) || { isRevealed: false, isFlagged: false };
-              const isMine = isMineAt(x, y, seed, mineDensity);
-              const adjacentMines = getAdjacentMines(x, y, seed, mineDensity);
-
-              return (
-                <Cell
-                  key={getCellKey(x, y)}
-                  x={x}
-                  y={y}
-                  isRevealed={cellState.isRevealed}
-                  isFlagged={cellState.isFlagged}
-                  isMine={isMine}
-                  adjacentMines={adjacentMines}
-                  onReveal={revealCell}
-                  onFlag={toggleFlag}
-                  onChord={chordReveal}
-                />
-              );
-            })
-          )}
-        </div>
-      </div>
-
-      <div className="text-sm text-gray-600 flex flex-col items-center gap-1">
-        <div>Viewport: ({viewportX}, {viewportY})</div>
-        <div className="text-xs text-gray-500">
-          Use Arrow Keys or WASD to navigate • R to reset
-        </div>
-      </div>
-      
       {showGameOver && (
         <GameOverModal
           finalScore={score}
@@ -570,6 +604,10 @@ export function GameBoard() {
           onPurchase={handlePurchaseUpgrade}
           onClose={handleCloseShop}
         />
+      )}
+      
+      {showLeaderboard && (
+        <Leaderboard onClose={() => setShowLeaderboard(false)} />
       )}
     </div>
   );
