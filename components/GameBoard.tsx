@@ -1,16 +1,16 @@
 'use client';
 
 import {
-    createGameSession,
-    endGameSession,
-    recordCellModification,
-    updateGameScore,
+  createGameSession,
+  endGameSession,
+  recordCellModification,
+  updateGameScore,
 } from '@/app/actions/game';
 import { POINTS_PER_CELL, POINTS_PER_FLAG } from '@/lib/game/constants';
 import {
-    getAdjacentMines,
-    getFloodFillCells,
-    isMineAt,
+  getAdjacentMines,
+  getFloodFillCells,
+  isMineAt,
 } from '@/lib/game/deterministic';
 import { CellAction, GameStatus } from '@/lib/game/types';
 import { useCallback, useEffect, useState } from 'react';
@@ -53,16 +53,20 @@ export function GameBoard() {
 
   const getCellKey = (x: number, y: number) => `${x},${y}`;
 
-  const getCellState = (x: number, y: number): CellState => {
-    const key = getCellKey(x, y);
-    return cells.get(key) || { isRevealed: false, isFlagged: false };
-  };
+  // This function is no longer needed as its logic is inlined into useCallback hooks
+  // const getCellState = (x: number, y: number): CellState => {
+  //   const key = getCellKey(x, y);
+  //   return cells.get(key) || { isRevealed: false, isFlagged: false };
+  // };
 
   const revealCell = useCallback(
     async (x: number, y: number) => {
       if (gameStatus !== GameStatus.ACTIVE || !sessionId || !seed) return;
 
-      const cellState = getCellState(x, y);
+      const getCellKey = (cx: number, cy: number) => `${cx},${cy}`;
+      const cellKey = getCellKey(x, y);
+      const cellState = cells.get(cellKey) || { isRevealed: false, isFlagged: false };
+      
       if (cellState.isRevealed || cellState.isFlagged) return;
 
       const isMine = isMineAt(x, y, seed, mineDensity);
@@ -74,7 +78,7 @@ export function GameBoard() {
         // Game over
         setCells((prev) => {
           const next = new Map(prev);
-          next.set(getCellKey(x, y), { ...cellState, isRevealed: true });
+          next.set(cellKey, { ...cellState, isRevealed: true });
           return next;
         });
         setGameStatus(GameStatus.LOST);
@@ -107,14 +111,17 @@ export function GameBoard() {
       setScore(newScore);
       await updateGameScore(sessionId, newScore);
     },
-    [gameStatus, sessionId, seed, mineDensity, score, cells]
+    [gameStatus, sessionId, seed, mineDensity, score]
   );
 
   const toggleFlag = useCallback(
     async (x: number, y: number) => {
       if (gameStatus !== GameStatus.ACTIVE || !sessionId) return;
 
-      const cellState = getCellState(x, y);
+      const getCellKey = (cx: number, cy: number) => `${cx},${cy}`;
+      const cellKey = getCellKey(x, y);
+      const cellState = cells.get(cellKey) || { isRevealed: false, isFlagged: false };
+      
       if (cellState.isRevealed) return;
 
       const action = cellState.isFlagged ? CellAction.UNFLAG : CellAction.FLAG;
@@ -122,7 +129,7 @@ export function GameBoard() {
 
       setCells((prev) => {
         const next = new Map(prev);
-        next.set(getCellKey(x, y), {
+        next.set(cellKey, {
           ...cellState,
           isFlagged: !cellState.isFlagged,
         });
@@ -226,7 +233,8 @@ export function GameBoard() {
           Array.from({ length: VIEWPORT_WIDTH }, (_, col) => {
             const x = viewportX + col;
             const y = viewportY + row;
-            const cellState = getCellState(x, y);
+            const getCellKey = (cx: number, cy: number) => `${cx},${cy}`;
+            const cellState = cells.get(getCellKey(x, y)) || { isRevealed: false, isFlagged: false };
             const isMine = isMineAt(x, y, seed, mineDensity);
             const adjacentMines = getAdjacentMines(x, y, seed, mineDensity);
 
