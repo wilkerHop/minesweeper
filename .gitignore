@@ -1,0 +1,103 @@
+# See https://help.github.com/articles/ignoring-files/ for more about ignoring files.
+
+# Dependencies
+/node_modules
+/.pnp
+.pnp.*
+.yarn/*
+!.yarn/patches
+!.yarn/plugins
+!.yarn/releases
+!.yarn/versions
+package-lock.json
+
+# Testing
+/coverage
+*.coverage
+.nyc_output
+/test-results/
+/playwright-report/
+/playwright/.cache/
+
+# Next.js
+/.next/
+/out/
+.next
+
+# Production builds
+/build
+/dist
+
+# Misc
+.DS_Store
+*.pem
+Thumbs.db
+
+# Debug logs
+npm-debug.log*
+yarn-debug.log*
+yarn-error.log*
+.pnpm-debug.log*
+lerna-debug.log*
+
+# Environment files
+.env
+.env*.local
+.env.development
+.env.production
+.env.test
+
+# Keep example file
+!.env.example
+
+# Vercel
+.vercel
+
+# TypeScript
+*.tsbuildinfo
+next-env.d.ts
+
+# IDE
+.vscode/
+.idea/
+*.swp
+*.swo
+*~
+.project
+.classpath
+.c9/
+*.launch
+.settings/
+*.sublime-workspace
+
+# OS
+.DS_Store
+.DS_Store?
+._*
+.Spotlight-V100
+.Trashes
+ehthumbs.db
+Thumbs.db
+
+# Temporary files
+*.tmp
+*.temp
+*.log
+*.pid
+*.seed
+*.pid.lock
+
+# Database files (local development)
+*.db
+*.sqlite
+*.sqlite3
+
+# Turso local development
+/.turso/
+
+# Build artifacts
+.turbo
+*.tsbuildinfo
+
+# Temporary Next.js directory from migration
+/nextjs-temp/
