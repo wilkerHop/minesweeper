@@ -1,10 +1,10 @@
 'use server';
 
-import { supabaseAdmin } from '@/lib/db/supabase';
 import { turso } from '@/lib/db/turso';
 import { DEFAULT_MINE_DENSITY } from '@/lib/game/constants';
 import { generateSeed } from '@/lib/game/deterministic';
 import { CellAction, GameStatus } from '@/lib/game/types';
+import { supabaseAdmin } from '@/lib/supabase/server';
 import { z } from 'zod';
 
 /**

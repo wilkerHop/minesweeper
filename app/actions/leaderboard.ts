@@ -1,163 +1,73 @@
 'use server';
 
-import { supabaseAdmin } from '@/lib/db/supabase';
-import { z } from 'zod';
+import { LeaderboardEntry } from '@/lib/game/types';
+import { supabaseAdmin } from '@/lib/supabase/server';
 
 /**
- * Input validation schemas
- */
-const submitToLeaderboardSchema = z.object({
-  sessionId: z.string().uuid(),
-  playerName: z.string().min(1).max(255),
-  cellsRevealed: z.number().int().min(0),
-  timePlayed: z.number().int().min(0), // in seconds
-});
-
-/**
- * Submits a game session to the leaderboard
+ * Retrieves the global leaderboard
  * 
- * @param sessionId - Game session ID
- * @param playerName - Player's display name
- * @param cellsRevealed - Number of cells revealed
- * @param timePlayed - Time played in seconds
- */
-export async function submitToLeaderboard(
-  sessionId: string,
-  playerName: string,
-  cellsRevealed: number,
-  timePlayed: number
-) {
-  try {
-    // Validate input
-    submitToLeaderboardSchema.parse({ sessionId, playerName, cellsRevealed, timePlayed });
-    
-    // Get the game session to get the score
-    const { data: session, error: sessionError } = await supabaseAdmin
-      .from('game_sessions')
-      .select('score, status')
-      .eq('id', sessionId)
-      .single();
-    
-    if (sessionError || !session) {
-      throw new Error('Game session not found');
-    }
-    
-    // Only allow completed games to be submitted
-    if (session.status !== 'WON' && session.status !== 'LOST') {
-      throw new Error('Cannot submit incomplete game to leaderboard');
-    }
-    
-    // Insert into leaderboard
-    const { data, error } = await supabaseAdmin
-      .from('leaderboard')
-      .insert({
-        session_id: sessionId,
-        player_name: playerName,
-        score: session.score,
-        cells_revealed: cellsRevealed,
-        time_played: timePlayed,
-      })
-      .select()
-      .single();
-    
-    if (error) {
-      console.error('Failed to submit to leaderboard:', error);
-      throw new Error('Failed to submit to leaderboard');
-    }
-    
-    return {
-      success: true,
-      leaderboardId: data.id,
-    };
-  } catch (error) {
-    console.error('submitToLeaderboard error:', error);
-    throw error;
-  }
-}
-
-/**
- * Gets the top scores from the leaderboard
- * 
- * @param limit - Number of top scores to retrieve (default: 10)
+ * @param limit - Number of entries to retrieve
  * @returns Array of leaderboard entries
  */
-export async function getTopScores(limit: number = 10) {
+export async function getGlobalLeaderboard(limit: number = 100): Promise<LeaderboardEntry[]> {
   try {
     const { data, error } = await supabaseAdmin
-      .from('leaderboard')
+      .from('leaderboard_view')
       .select('*')
       .order('score', { ascending: false })
       .limit(limit);
     
     if (error) {
-      console.error('Failed to get top scores:', error);
-      throw new Error('Failed to get top scores');
-    }
-    
-    return data.map(entry => ({
-      id: entry.id,
-      sessionId: entry.session_id,
-      playerName: entry.player_name,
-      score: entry.score,
-      cellsRevealed: entry.cells_revealed,
-      timePlayed: entry.time_played,
-      createdAt: new Date(entry.created_at),
-    }));
-  } catch (error) {
-    console.error('getTopScores error:', error);
-    throw error;
-  }
-}
-
-/**
- * Gets the best scores for a specific user
- * 
- * @param userId - User ID
- * @param limit - Number of scores to retrieve (default: 5)
- * @returns Array of user's best scores
- */
-export async function getUserBestScores(userId: string, limit: number = 5) {
-  try {
-    // First get the user's game sessions
-    const { data: sessions, error: sessionsError } = await supabaseAdmin
-      .from('game_sessions')
-      .select('id')
-      .eq('user_id', userId);
-    
-    if (sessionsError) {
-      throw new Error('Failed to get user sessions');
-    }
-    
-    if (!sessions || sessions.length === 0) {
+      console.error('Failed to fetch leaderboard:', error);
+      // Fallback to empty array instead of throwing to prevent UI crash
       return [];
     }
     
-    const sessionIds = sessions.map(s => s.id);
-    
-    // Get leaderboard entries for those sessions
-    const { data, error } = await supabaseAdmin
-      .from('leaderboard')
-      .select('*')
-      .in('session_id', sessionIds)
-      .order('score', { ascending: false })
-      .limit(limit);
-    
-    if (error) {
-      console.error('Failed to get user best scores:', error);
-      throw new Error('Failed to get user best scores');
-    }
-    
-    return data.map(entry => ({
+    return data.map((entry: { id: string; session_id: string; player_name: string | null; score: number; cells_revealed: number | null; time_played: number | null; created_at: string }) => ({
       id: entry.id,
       sessionId: entry.session_id,
-      playerName: entry.player_name,
+      playerName: entry.player_name || 'Anonymous',
       score: entry.score,
-      cellsRevealed: entry.cells_revealed,
-      timePlayed: entry.time_played,
+      cellsRevealed: entry.cells_revealed || 0,
+      timePlayed: entry.time_played || 0,
       createdAt: new Date(entry.created_at),
     }));
   } catch (error) {
-    console.error('getUserBestScores error:', error);
-    throw error;
+    console.error('getGlobalLeaderboard error:', error);
+    return [];
+  }
+}
+
+/**
+ * Submits a score to the leaderboard
+ * Note: In a real app, this might be handled automatically via database triggers
+ * or when ending a game session.
+ * 
+ * @param sessionId - Game session ID
+ * @param playerName - Player's display name
+ * @param score - Final score
+ */
+export async function submitScore(sessionId: string, playerName: string, score: number) {
+  try {
+    // Check if score qualifies for leaderboard (e.g. top 1000)
+    // For now, we just insert/update the session record with the player name
+    
+    const { error } = await supabaseAdmin
+      .from('game_sessions')
+      .update({
+        user_id: playerName, // Using user_id column for name temporarily if no auth
+        score: score
+      })
+      .eq('id', sessionId);
+      
+    if (error) {
+      console.error('Failed to submit score:', error);
+      return { success: false, error: error.message };
+    }
+    
+    return { success: true };
+  } catch (error) {
+    console.error('submitScore error:', error);
+    return { success: false, error: String(error) };
   }
 }

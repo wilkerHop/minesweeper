@@ -1,13 +1,7 @@
-import { getMockLeaderboard } from '@/app/actions/mock';
+import { getGlobalLeaderboard } from '@/app/actions/leaderboard';
+import { LeaderboardEntry } from '@/lib/game/types';
 import { useEffect, useState } from 'react';
 import { BrutalCard } from './BrutalCard';
-
-interface LeaderboardEntry {
-  id: string;
-  playerName: string;
-  score: number;
-  rank: number;
-}
 
 interface Props {
   onClose: () => void;
@@ -20,7 +14,7 @@ export function Leaderboard({ onClose }: Props) {
   useEffect(() => {
     async function fetchLeaderboard() {
       try {
-        const data = await getMockLeaderboard();
+        const data = await getGlobalLeaderboard();
         setEntries(data);
       } catch (error) {
         console.error('Failed to fetch leaderboard:', error);
@@ -47,14 +41,14 @@ export function Leaderboard({ onClose }: Props) {
                 <div className="col-span-3 text-right">Score</div>
               </div>
               
-              {entries.map((entry) => (
+              {entries.map((entry, index) => (
                 <div 
                   key={entry.id} 
                   className={`grid grid-cols-12 items-center py-2 border-b border-gray-900 font-mono ${
-                    entry.rank === 1 ? 'text-neon-green font-bold' : 'text-gray-300'
+                    index === 0 ? 'text-neon-green font-bold' : 'text-gray-300'
                   }`}
                 >
-                  <div className="col-span-2">#{entry.rank}</div>
+                  <div className="col-span-2">#{index + 1}</div>
                   <div className="col-span-7 truncate">{entry.playerName}</div>
                   <div className="col-span-3 text-right font-bold">{entry.score.toLocaleString()}</div>
                 </div>

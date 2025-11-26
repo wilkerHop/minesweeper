@@ -1,37 +1,32 @@
 'use client';
 
 import {
-    createGameSession,
-    endGameSession,
-    recordCellModification,
-    updateGameScore,
+  createGameSession,
+  endGameSession,
+  recordCellModification,
+  updateGameScore,
 } from '@/app/actions/game';
+import { DEFAULT_MINE_DENSITY } from '@/lib/game/constants';
 import {
-    createMockGameSession,
-    endMockGameSession,
-    recordMockCellModification,
-    updateMockGameScore,
-} from '@/app/actions/mock';
-import {
-    getAdjacentMines,
-    getBiome,
-    getFloodFillCells,
-    isMineAt,
+  getAdjacentMines,
+  getBiome,
+  getFloodFillCells,
+  isMineAt,
 } from '@/lib/game/deterministic';
 import { CellAction, GameStatus, PlayerProgress, UpgradeLevels } from '@/lib/game/types';
 import {
-    calculateMineDensity,
-    calculatePointsPerCell,
-    calculatePointsPerFlag,
-    calculateSafeClicks,
-    calculateSecondChances,
-    UPGRADES,
+  calculateMineDensity,
+  calculatePointsPerCell,
+  calculatePointsPerFlag,
+  calculateSafeClicks,
+  calculateSecondChances,
+  UPGRADES,
 } from '@/lib/game/upgrades';
 import {
-    addCoins,
-    loadProgress,
-    purchaseUpgrade,
-    updateGameStats
+  addCoins,
+  loadProgress,
+  purchaseUpgrade,
+  updateGameStats
 } from '@/lib/services/progressStorage';
 import { useCallback, useEffect, useState } from 'react';
 import { BrutalCard } from './BrutalCard';
@@ -40,9 +35,6 @@ import { GameOverModal } from './GameOverModal';
 import { GameTimer } from './GameTimer';
 import { Leaderboard } from './Leaderboard';
 import { UpgradeShop } from './UpgradeShop';
-
-// Use mock mode if environment variables aren't configured
-const USE_MOCK = typeof window !== 'undefined' && !process.env.NEXT_PUBLIC_SUPABASE_URL?.startsWith('https://');
 
 interface CellState {
   isRevealed: boolean;
@@ -80,11 +72,13 @@ export function GameBoard() {
         const currentProgress = loadProgress();
         setProgress(currentProgress);
         
-        const session = USE_MOCK 
-          ? await createMockGameSession()
-          : await createGameSession();
-        setSessionId(session.sessionId);
-        setSeed(session.seed);
+        // Create game session
+        const { sessionId: newSessionId, seed: newSeed } = await createGameSession({
+          mineDensity: DEFAULT_MINE_DENSITY
+        });
+        
+        setSessionId(newSessionId);
+        setSeed(newSeed);
         
         // Apply upgrade effects
         const effectiveDensity = calculateMineDensity(currentProgress.upgrades.mineDensityReduction);
@@ -99,12 +93,6 @@ export function GameBoard() {
         setIsLoading(false);
       } catch (error) {
         console.error('Failed to initialize game:', error);
-        // Fallback to mock mode if real initialization fails
-        const session = await createMockGameSession();
-        setSessionId(session.sessionId);
-        setSeed(session.seed);
-        setMineDensity(0.15);
-        setIsLoading(false);
       }
     }
     initGame();
@@ -141,12 +129,9 @@ export function GameBoard() {
       const isMine = isMineAt(x, y, currentSeed, mineDensity);
 
       // Record the cell modification
-      if (USE_MOCK) {
-        await recordMockCellModification();
-      } else {
-        await recordCellModification(sessionId, x, y, CellAction.REVEAL);
-      }
-
+      // Record action
+      recordCellModification(sessionId, x, y, CellAction.REVEAL).catch(console.error);
+      
       if (isMine) {
         // Check for second chance
         if (secondChancesRemaining > 0) {
@@ -184,17 +169,15 @@ export function GameBoard() {
         setGameStatus(GameStatus.LOST);
         
         // Calculate coins and update stats
+        // Calculate coins and update stats
         const coins = Math.floor(score / 10);
         setCoinsEarned(coins);
         const updatedProgress = updateGameStats(score);
         addCoins(coins);
         setProgress(updatedProgress);
         
-        if (USE_MOCK) {
-          await endMockGameSession();
-        } else {
-          await endGameSession(sessionId, score, GameStatus.LOST);
-        }
+        // End session
+        endGameSession(sessionId, score, GameStatus.LOST).catch(console.error);
         
         // Show game over modal
         setShowGameOver(true);
@@ -226,11 +209,9 @@ export function GameBoard() {
       const newScore = score + cellsToReveal.length * pointsPerCell;
       setScore(newScore);
       
-      // No win condition in infinite mode - game continues until mine is hit
-      if (USE_MOCK) {
-        await updateMockGameScore();
-      } else {
-        await updateGameScore(sessionId, newScore);
+      // Update score if needed (batch updates in real app, but here we do it periodically or on significant events)
+      if (newScore % 100 === 0) {
+        updateGameScore(sessionId, newScore).catch(console.error);
       }
     },
     [gameStatus, sessionId, seed, mineDensity, score, cells, clickCount, safeClicksRemaining, viewportX, viewportY, secondChancesRemaining, progress]
@@ -285,11 +266,7 @@ export function GameBoard() {
       if (cellState.isRevealed) return;
 
       const action = cellState.isFlagged ? CellAction.UNFLAG : CellAction.FLAG;
-      if (USE_MOCK) {
-        await recordMockCellModification();
-      } else {
-        await recordCellModification(sessionId, x, y, action);
-      }
+      await recordCellModification(sessionId, x, y, action);
 
       setCells((prev) => {
         const next = new Map(prev);
@@ -300,18 +277,13 @@ export function GameBoard() {
         return next;
       });
 
-      // Update score for correct flags with bonus
-      if (!cellState.isFlagged) {
-        const isMine = isMineAt(x, y, seed, mineDensity);
-        if (isMine) {
-          const pointsPerFlag = calculatePointsPerFlag(progress.upgrades.flagBonus);
-          const newScore = score + pointsPerFlag;
-          setScore(newScore);
-          if (USE_MOCK) {
-            await updateMockGameScore();
-          } else {
-            await updateGameScore(sessionId, newScore);
-          }
+      const isMine = isMineAt(x, y, seed, mineDensity);
+      if (isMine) {
+        const pointsPerFlag = calculatePointsPerFlag(progress.upgrades.flagBonus);
+        const newScore = score + pointsPerFlag;
+        setScore(newScore);
+        if (newScore % 100 === 0) {
+          updateGameScore(sessionId, newScore).catch(console.error);
         }
       }
     },
@@ -321,11 +293,13 @@ export function GameBoard() {
   const resetGame = useCallback(async () => {
     const currentProgress = loadProgress();
     
-    const session = USE_MOCK
-      ? await createMockGameSession()
-      : await createGameSession();
-    setSessionId(session.sessionId);
-    setSeed(session.seed);
+    // Create game session
+    const { sessionId: newSessionId, seed: newSeed } = await createGameSession({
+      mineDensity: DEFAULT_MINE_DENSITY
+    });
+    
+    setSessionId(newSessionId);
+    setSeed(newSeed);
     
     // Reapply upgrades
     const effectiveDensity = calculateMineDensity(currentProgress.upgrades.mineDensityReduction);
