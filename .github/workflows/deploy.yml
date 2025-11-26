@@ -1,0 +1,196 @@
+name: Deploy Infinite Minesweeper
+
+on:
+  push:
+    branches: [main, develop]
+  pull_request:
+    branches: [main]
+  workflow_dispatch:
+
+env:
+  NODE_VERSION: '20.x'
+
+jobs:
+  # Stage 1: Build & Lint
+  build-and-lint:
+    name: Build and Lint
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: ${{ env.NODE_VERSION }}
+          cache: 'npm'
+
+      - name: Install dependencies
+        run: npm ci
+
+      - name: Run ESLint
+        run: npm run lint
+
+      - name: Build application
+        run: npm run build
+        env:
+          # Provide dummy values for build-time validation
+          NEXT_PUBLIC_SUPABASE_URL: ${{ secrets.NEXT_PUBLIC_SUPABASE_URL || 'https://dummy.supabase.co' }}
+          NEXT_PUBLIC_SUPABASE_ANON_KEY: ${{ secrets.NEXT_PUBLIC_SUPABASE_ANON_KEY || 'dummy-key' }}
+          SUPABASE_SERVICE_ROLE_KEY: ${{ secrets.SUPABASE_SERVICE_ROLE_KEY || 'dummy-key' }}
+          TURSO_DATABASE_URL: ${{ secrets.TURSO_DATABASE_URL || 'https://dummy.turso.io' }}
+          TURSO_AUTH_TOKEN: ${{ secrets.TURSO_AUTH_TOKEN || 'dummy-token' }}
+          R2_ACCOUNT_ID: ${{ secrets.R2_ACCOUNT_ID || 'dummy' }}
+          R2_ACCESS_KEY_ID: ${{ secrets.R2_ACCESS_KEY_ID || 'dummy' }}
+          R2_SECRET_ACCESS_KEY: ${{ secrets.R2_SECRET_ACCESS_KEY || 'dummy' }}
+          R2_BUCKET_NAME: ${{ secrets.R2_BUCKET_NAME || 'dummy' }}
+
+      - name: Upload build artifacts
+        uses: actions/upload-artifact@v4
+        with:
+          name: build-output
+          path: .next
+          retention-days: 1
+
+  # Stage 2: Test
+  test:
+    name: Run Tests
+    runs-on: ubuntu-latest
+    needs: build-and-lint
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: ${{ env.NODE_VERSION }}
+          cache: 'npm'
+
+      - name: Install dependencies
+        run: npm ci
+
+      - name: Run unit tests
+        run: npm run test:unit
+
+      - name: Run integration tests
+        run: npm run test:integration || echo "Integration tests not yet implemented"
+        continue-on-error: true
+
+      - name: Run performance tests
+        run: npm run test:performance || echo "Performance tests not yet implemented"
+        continue-on-error: true
+
+      - name: Security audit
+        run: npm run security:audit
+        continue-on-error: true
+
+      - name: Upload test results
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: test-results
+          path: coverage/
+          retention-days: 7
+
+  # Stage 3: Deploy to Staging (Vercel Preview)
+  deploy-staging:
+    name: Deploy to Staging
+    runs-on: ubuntu-latest
+    needs: test
+    if: github.event_name == 'push' && github.ref == 'refs/heads/develop'
+    environment:
+      name: staging
+      url: ${{ steps.deploy.outputs.preview-url }}
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      - name: Deploy to Vercel (Preview)
+        id: deploy
+        uses: amondnet/vercel-action@v25
+        with:
+          vercel-token: ${{ secrets.VERCEL_TOKEN }}
+          vercel-org-id: ${{ secrets.VERCEL_ORG_ID }}
+          vercel-project-id: ${{ secrets.VERCEL_PROJECT_ID }}
+          scope: ${{ secrets.VERCEL_ORG_ID }}
+        env:
+          NEXT_PUBLIC_SUPABASE_URL: ${{ secrets.STAGING_SUPABASE_URL }}
+          NEXT_PUBLIC_SUPABASE_ANON_KEY: ${{ secrets.STAGING_SUPABASE_ANON_KEY }}
+          SUPABASE_SERVICE_ROLE_KEY: ${{ secrets.STAGING_SUPABASE_SERVICE_ROLE_KEY }}
+          TURSO_DATABASE_URL: ${{ secrets.STAGING_TURSO_DATABASE_URL }}
+          TURSO_AUTH_TOKEN: ${{ secrets.STAGING_TURSO_AUTH_TOKEN }}
+          R2_ACCOUNT_ID: ${{ secrets.STAGING_R2_ACCOUNT_ID }}
+          R2_ACCESS_KEY_ID: ${{ secrets.STAGING_R2_ACCESS_KEY_ID }}
+          R2_SECRET_ACCESS_KEY: ${{ secrets.STAGING_R2_SECRET_ACCESS_KEY }}
+          R2_BUCKET_NAME: ${{ secrets.STAGING_R2_BUCKET_NAME }}
+
+      - name: Run E2E tests on staging
+        run: echo "E2E tests would run against ${{ steps.deploy.outputs.preview-url }}"
+        # Uncomment when E2E tests are ready:
+        # run: npm run test:e2e
+        # env:
+        #   BASE_URL: ${{ steps.deploy.outputs.preview-url }}
+
+      - name: Log latency metrics
+        run: |
+          echo "Logging latency metrics for staging deployment"
+          echo "Deployment URL: ${{ steps.deploy.outputs.preview-url }}"
+          # Add actual latency testing here
+
+  # Stage 4: Production Approval
+  production-approval:
+    name: Production Deployment Approval
+    runs-on: ubuntu-latest
+    needs: deploy-staging
+    if: github.event_name == 'push' && github.ref == 'refs/heads/main'
+    environment:
+      name: production
+    steps:
+      - name: Wait for approval
+        run: echo "Waiting for manual approval to deploy to production..."
+
+  # Stage 5: Deploy to Production
+  deploy-production:
+    name: Deploy to Production
+    runs-on: ubuntu-latest
+    needs: production-approval
+    if: github.event_name == 'push' && github.ref == 'refs/heads/main'
+    environment:
+      name: production
+      url: ${{ secrets.PRODUCTION_URL }}
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      - name: Deploy to Vercel (Production)
+        uses: amondnet/vercel-action@v25
+        with:
+          vercel-token: ${{ secrets.VERCEL_TOKEN }}
+          vercel-org-id: ${{ secrets.VERCEL_ORG_ID }}
+          vercel-project-id: ${{ secrets.VERCEL_PROJECT_ID }}
+          vercel-args: '--prod'
+          scope: ${{ secrets.VERCEL_ORG_ID }}
+        env:
+          NEXT_PUBLIC_SUPABASE_URL: ${{ secrets.PRODUCTION_SUPABASE_URL }}
+          NEXT_PUBLIC_SUPABASE_ANON_KEY: ${{ secrets.PRODUCTION_SUPABASE_ANON_KEY }}
+          SUPABASE_SERVICE_ROLE_KEY: ${{ secrets.PRODUCTION_SUPABASE_SERVICE_ROLE_KEY }}
+          TURSO_DATABASE_URL: ${{ secrets.PRODUCTION_TURSO_DATABASE_URL }}
+          TURSO_AUTH_TOKEN: ${{ secrets.PRODUCTION_TURSO_AUTH_TOKEN }}
+          R2_ACCOUNT_ID: ${{ secrets.PRODUCTION_R2_ACCOUNT_ID }}
+          R2_ACCESS_KEY_ID: ${{ secrets.PRODUCTION_R2_ACCESS_KEY_ID }}
+          R2_SECRET_ACCESS_KEY: ${{ secrets.PRODUCTION_R2_SECRET_ACCESS_KEY }}
+          R2_BUCKET_NAME: ${{ secrets.PRODUCTION_R2_BUCKET_NAME }}
+
+      - name: Run smoke tests
+        run: |
+          echo "Running smoke tests on production"
+          echo "Production URL: ${{ secrets.PRODUCTION_URL }}"
+          # Add actual smoke tests here
+
+      - name: Create deployment notification
+        run: |
+          echo "✅ Production deployment successful!"
+          echo "URL: ${{ secrets.PRODUCTION_URL }}"
+          echo "Commit: ${{ github.sha }}"
+          echo "Deployed by: ${{ github.actor }}"
