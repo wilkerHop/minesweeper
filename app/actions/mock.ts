@@ -1,3 +1,5 @@
+'use server';
+
 // Mock environment for local development when databases aren't configured
 
 let mockSessionCounter = 0;
