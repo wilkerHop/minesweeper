@@ -12,7 +12,7 @@ import {
   recordMockCellModification,
   updateMockGameScore,
 } from '@/app/actions/mock';
-import { POINTS_PER_CELL, POINTS_PER_FLAG } from '@/lib/game/constants';
+import { POINTS_PER_CELL, POINTS_PER_FLAG, WIN_SCORE_THRESHOLD } from '@/lib/game/constants';
 import {
   getAdjacentMines,
   getFloodFillCells,
@@ -68,6 +68,8 @@ export function GameBoard() {
     initGame();
   }, []);
 
+  const [isFirstClick, setIsFirstClick] = useState(true);
+
   const revealCell = useCallback(
     async (x: number, y: number) => {
       if (gameStatus !== GameStatus.ACTIVE || !sessionId || !seed) return;
@@ -78,7 +80,23 @@ export function GameBoard() {
       
       if (cellState.isRevealed || cellState.isFlagged) return;
 
-      const isMine = isMineAt(x, y, seed, mineDensity);
+      let currentSeed = seed;
+
+      // First Click Safe Logic
+      if (isFirstClick) {
+        let attempts = 0;
+        // Ensure first click is not a mine
+        while (isMineAt(x, y, currentSeed, mineDensity) && attempts < 100) {
+          currentSeed = `${currentSeed}-safe`;
+          attempts++;
+        }
+        if (currentSeed !== seed) {
+          setSeed(currentSeed);
+        }
+        setIsFirstClick(false);
+      }
+
+      const isMine = isMineAt(x, y, currentSeed, mineDensity);
 
       // Record the cell modification
       if (USE_MOCK) {
@@ -88,10 +106,25 @@ export function GameBoard() {
       }
 
       if (isMine) {
-        // Game over
+        // Game over - Reveal all mines in viewport
         setCells((prev) => {
           const next = new Map(prev);
+          
+          // Reveal the clicked mine
           next.set(cellKey, { ...cellState, isRevealed: true });
+
+          // Reveal all other mines in the current viewport
+          for (let row = 0; row < VIEWPORT_HEIGHT; row++) {
+            for (let col = 0; col < VIEWPORT_WIDTH; col++) {
+              const vx = viewportX + col;
+              const vy = viewportY + row;
+              if (isMineAt(vx, vy, currentSeed, mineDensity)) {
+                const vKey = getCellKey(vx, vy);
+                const vState = prev.get(vKey) || { isRevealed: false, isFlagged: false };
+                next.set(vKey, { ...vState, isRevealed: true });
+              }
+            }
+          }
           return next;
         });
         setGameStatus(GameStatus.LOST);
@@ -104,11 +137,11 @@ export function GameBoard() {
       }
 
       // Flood fill if no adjacent mines
-      const adjacentMines = getAdjacentMines(x, y, seed, mineDensity);
+      const adjacentMines = getAdjacentMines(x, y, currentSeed, mineDensity);
       let cellsToReveal: [number, number][] = [[x, y]];
 
       if (adjacentMines === 0) {
-        cellsToReveal = getFloodFillCells(x, y, seed, mineDensity);
+        cellsToReveal = getFloodFillCells(x, y, currentSeed, mineDensity);
       }
 
       setCells((prev) => {
@@ -126,13 +159,62 @@ export function GameBoard() {
       // Update score
       const newScore = score + cellsToReveal.length * POINTS_PER_CELL;
       setScore(newScore);
-      if (USE_MOCK) {
-        await updateMockGameScore();
+      
+      // Check for win condition
+      if (newScore >= WIN_SCORE_THRESHOLD) {
+        setGameStatus(GameStatus.WON);
+        if (USE_MOCK) {
+          await endMockGameSession();
+        } else {
+          await endGameSession(sessionId, newScore, GameStatus.WON);
+        }
       } else {
-        await updateGameScore(sessionId, newScore);
+        if (USE_MOCK) {
+          await updateMockGameScore();
+        } else {
+          await updateGameScore(sessionId, newScore);
+        }
       }
     },
-    [gameStatus, sessionId, seed, mineDensity, score, cells]
+    [gameStatus, sessionId, seed, mineDensity, score, cells, isFirstClick, viewportX, viewportY]
+  );
+
+  const chordReveal = useCallback(
+    async (x: number, y: number) => {
+      if (gameStatus !== GameStatus.ACTIVE || !sessionId || !seed) return;
+
+      const adjacentMines = getAdjacentMines(x, y, seed, mineDensity);
+      let flagCount = 0;
+      const neighbors: [number, number][] = [];
+
+      // Count flags and collect neighbors
+      for (let dx = -1; dx <= 1; dx++) {
+        for (let dy = -1; dy <= 1; dy++) {
+          if (dx === 0 && dy === 0) continue;
+          const nx = x + dx;
+          const ny = y + dy;
+          neighbors.push([nx, ny]);
+          
+          const getCellKey = (cx: number, cy: number) => `${cx},${cy}`;
+          const state = cells.get(getCellKey(nx, ny));
+          if (state?.isFlagged) {
+            flagCount++;
+          }
+        }
+      }
+
+      // If flags match mines, reveal neighbors
+      if (flagCount === adjacentMines) {
+        for (const [nx, ny] of neighbors) {
+          const getCellKey = (cx: number, cy: number) => `${cx},${cy}`;
+          const state = cells.get(getCellKey(nx, ny));
+          if (!state?.isRevealed && !state?.isFlagged) {
+            await revealCell(nx, ny);
+          }
+        }
+      }
+    },
+    [gameStatus, sessionId, seed, mineDensity, cells, revealCell]
   );
 
   const toggleFlag = useCallback(
@@ -190,6 +272,7 @@ export function GameBoard() {
     setGameStatus(GameStatus.ACTIVE);
     setViewportX(-5);
     setViewportY(-5);
+    setIsFirstClick(true);
   };
 
   if (isLoading) {
@@ -280,6 +363,7 @@ export function GameBoard() {
                 adjacentMines={adjacentMines}
                 onReveal={revealCell}
                 onFlag={toggleFlag}
+                onChord={chordReveal}
               />
             );
           })

@@ -11,6 +11,7 @@ interface CellProps {
   adjacentMines: number;
   onReveal: (x: number, y: number) => void;
   onFlag: (x: number, y: number) => void;
+  onChord: (x: number, y: number) => void;
 }
 
 export function Cell({
@@ -22,8 +23,13 @@ export function Cell({
   adjacentMines,
   onReveal,
   onFlag,
+  onChord,
 }: CellProps) {
   const handleClick = () => {
+    if (isRevealed && adjacentMines > 0) {
+      onChord(x, y);
+      return;
+    }
     if (!isRevealed && !isFlagged) {
       onReveal(x, y);
     }

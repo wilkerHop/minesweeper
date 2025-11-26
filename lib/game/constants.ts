@@ -29,3 +29,9 @@ export const POINTS_PER_FLAG = 50;
  * Penalty for incorrectly flagging a safe cell
  */
 export const PENALTY_PER_WRONG_FLAG = -25;
+
+/**
+ * Score threshold to trigger a win condition in infinite mode
+ * Corresponds to revealing 100 safe cells (100 * 10 points)
+ */
+export const WIN_SCORE_THRESHOLD = 1000;
