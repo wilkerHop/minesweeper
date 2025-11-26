@@ -1,22 +1,22 @@
 'use client';
 
 import {
-  createGameSession,
-  endGameSession,
-  recordCellModification,
-  updateGameScore,
+    createGameSession,
+    endGameSession,
+    recordCellModification,
+    updateGameScore,
 } from '@/app/actions/game';
 import {
-  createMockGameSession,
-  endMockGameSession,
-  recordMockCellModification,
-  updateMockGameScore,
+    createMockGameSession,
+    endMockGameSession,
+    recordMockCellModification,
+    updateMockGameScore,
 } from '@/app/actions/mock';
-import { POINTS_PER_CELL, POINTS_PER_FLAG, WIN_SCORE_THRESHOLD } from '@/lib/game/constants';
+import { POINTS_PER_CELL, POINTS_PER_FLAG } from '@/lib/game/constants';
 import {
-  getAdjacentMines,
-  getFloodFillCells,
-  isMineAt,
+    getAdjacentMines,
+    getFloodFillCells,
+    isMineAt,
 } from '@/lib/game/deterministic';
 import { CellAction, GameStatus } from '@/lib/game/types';
 import { useCallback, useEffect, useState } from 'react';
@@ -162,20 +162,11 @@ export function GameBoard() {
       const newScore = score + cellsToReveal.length * POINTS_PER_CELL;
       setScore(newScore);
       
-      // Check for win condition
-      if (newScore >= WIN_SCORE_THRESHOLD) {
-        setGameStatus(GameStatus.WON);
-        if (USE_MOCK) {
-          await endMockGameSession();
-        } else {
-          await endGameSession(sessionId, newScore, GameStatus.WON);
-        }
+      // No win condition in infinite mode - game continues until mine is hit
+      if (USE_MOCK) {
+        await updateMockGameScore();
       } else {
-        if (USE_MOCK) {
-          await updateMockGameScore();
-        } else {
-          await updateGameScore(sessionId, newScore);
-        }
+        await updateGameScore(sessionId, newScore);
       }
     },
     [gameStatus, sessionId, seed, mineDensity, score, cells, isFirstClick, viewportX, viewportY]
