@@ -75,61 +75,33 @@ jobs:
     needs: build-and-lint
     steps:
       - name: Check Vercel Secrets
-        run: |
-          echo "Validating Vercel configuration..."
-          if [ -z "${{ secrets.VERCEL_TOKEN }}" ]; then
-            echo "::error::VERCEL_TOKEN is not set"
-            exit 1
-          fi
-          if [ -z "${{ secrets.VERCEL_ORG_ID }}" ]; then
-            echo "::error::VERCEL_ORG_ID is not set"
-            exit 1
-          fi
-          if [ -z "${{ secrets.VERCEL_PROJECT_ID }}" ]; then
-            echo "::error::VERCEL_PROJECT_ID is not set"
-            exit 1
-          fi
-          echo "✓ Vercel secrets configured"
+        run: ./scripts/validate-secrets.sh .github/secrets/vercel.txt
+        env:
+          VERCEL_TOKEN: ${{ secrets.VERCEL_TOKEN }}
+          VERCEL_ORG_ID: ${{ secrets.VERCEL_ORG_ID }}
+          VERCEL_PROJECT_ID: ${{ secrets.VERCEL_PROJECT_ID }}
 
       - name: Check Development Environment Secrets
         if: github.ref == 'refs/heads/develop'
-        run: |
-          echo "Validating Development environment secrets..."
-          MISSING_SECRETS=""
-          
-          [ -z "${{ secrets.DEV_SUPABASE_URL }}" ] && MISSING_SECRETS="$MISSING_SECRETS DEV_SUPABASE_URL"
-          [ -z "${{ secrets.DEV_SUPABASE_ANON_KEY }}" ] && MISSING_SECRETS="$MISSING_SECRETS DEV_SUPABASE_ANON_KEY"
-          [ -z "${{ secrets.DEV_SUPABASE_SERVICE_ROLE_KEY }}" ] && MISSING_SECRETS="$MISSING_SECRETS DEV_SUPABASE_SERVICE_ROLE_KEY"
-          [ -z "${{ secrets.DEV_TURSO_DATABASE_URL }}" ] && MISSING_SECRETS="$MISSING_SECRETS DEV_TURSO_DATABASE_URL"
-          [ -z "${{ secrets.DEV_TURSO_AUTH_TOKEN }}" ] && MISSING_SECRETS="$MISSING_SECRETS DEV_TURSO_AUTH_TOKEN"
-          [ -z "${{ secrets.DEV_R2_ACCOUNT_ID }}" ] && MISSING_SECRETS="$MISSING_SECRETS DEV_R2_ACCOUNT_ID"
-          [ -z "${{ secrets.DEV_R2_ACCESS_KEY_ID }}" ] && MISSING_SECRETS="$MISSING_SECRETS DEV_R2_ACCESS_KEY_ID"
-          [ -z "${{ secrets.DEV_R2_SECRET_ACCESS_KEY }}" ] && MISSING_SECRETS="$MISSING_SECRETS DEV_R2_SECRET_ACCESS_KEY"
-          [ -z "${{ secrets.DEV_R2_BUCKET_NAME }}" ] && MISSING_SECRETS="$MISSING_SECRETS DEV_R2_BUCKET_NAME"
-          
-          if [ ! -z "$MISSING_SECRETS" ]; then
-            echo "::error::Missing development secrets:$MISSING_SECRETS"
-            echo "::error::See .github/SECRETS.md for configuration instructions"
-            exit 1
-          fi
-          echo "✓ All development secrets configured"
+        run: ./scripts/validate-secrets.sh .github/secrets/development.txt
+        env:
+          DEV_SUPABASE_URL: ${{ secrets.DEV_SUPABASE_URL }}
+          DEV_SUPABASE_ANON_KEY: ${{ secrets.DEV_SUPABASE_ANON_KEY }}
+          DEV_SUPABASE_SERVICE_ROLE_KEY: ${{ secrets.DEV_SUPABASE_SERVICE_ROLE_KEY }}
+          DEV_TURSO_DATABASE_URL: ${{ secrets.DEV_TURSO_DATABASE_URL }}
+          DEV_TURSO_AUTH_TOKEN: ${{ secrets.DEV_TURSO_AUTH_TOKEN }}
+          DEV_R2_ACCOUNT_ID: ${{ secrets.DEV_R2_ACCOUNT_ID }}
+          DEV_R2_ACCESS_KEY_ID: ${{ secrets.DEV_R2_ACCESS_KEY_ID }}
+          DEV_R2_SECRET_ACCESS_KEY: ${{ secrets.DEV_R2_SECRET_ACCESS_KEY }}
+          DEV_R2_BUCKET_NAME: ${{ secrets.DEV_R2_BUCKET_NAME }}
 
       - name: Check Staging Environment Secrets
         if: github.event_name == 'workflow_dispatch' || contains(github.ref, '-staging')
-        run: |
-          echo "Validating Staging environment secrets..."
-          MISSING_SECRETS=""
-          
-          [ -z "${{ secrets.STAGING_SUPABASE_URL }}" ] && MISSING_SECRETS="$MISSING_SECRETS STAGING_SUPABASE_URL"
-          [ -z "${{ secrets.STAGING_SUPABASE_ANON_KEY }}" ] && MISSING_SECRETS="$MISSING_SECRETS STAGING_SUPABASE_ANON_KEY"
-          [ -z "${{ secrets.STAGING_SUPABASE_SERVICE_ROLE_KEY }}" ] && MISSING_SECRETS="$MISSING_SECRETS STAGING_SUPABASE_SERVICE_ROLE_KEY"
-          
-          if [ ! -z "$MISSING_SECRETS" ]; then
-            echo "::warning::Missing staging secrets:$MISSING_SECRETS"
-            echo "::warning::Staging deployment may fail. See .github/SECRETS.md"
-          else
-            echo "✓ All staging secrets configured"
-          fi
+        run: ./scripts/validate-secrets.sh .github/secrets/staging.txt
+        env:
+          STAGING_SUPABASE_URL: ${{ secrets.STAGING_SUPABASE_URL }}
+          STAGING_SUPABASE_ANON_KEY: ${{ secrets.STAGING_SUPABASE_ANON_KEY }}
+          STAGING_SUPABASE_SERVICE_ROLE_KEY: ${{ secrets.STAGING_SUPABASE_SERVICE_ROLE_KEY }}
 
   # Stage 2: Test
   test:

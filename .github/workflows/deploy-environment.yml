@@ -104,7 +104,13 @@ jobs:
           while [ $RETRY_COUNT -lt $MAX_RETRIES ] && [ "$SUCCESS" = false ]; do
             echo "Attempt $((RETRY_COUNT + 1))/$MAX_RETRIES..."
             
-            HTTP_CODE=$(curl -s -o /dev/null -w "%{http_code}" "${{ steps.deploy.outputs.preview-url }}" || echo "000")
+            HTTP_CODE=$(curl -s -o /dev/null -w "%{http_code}" "${{ steps.deploy.outputs.preview-url }}")
+            CURL_EXIT_CODE=$?
+            
+            if [ $CURL_EXIT_CODE -ne 0 ]; then
+              echo "::warning::curl command failed with exit code $CURL_EXIT_CODE. This might indicate a network or DNS issue."
+              HTTP_CODE="000"
+            fi
             
             if [ "$HTTP_CODE" = "200" ]; then
               echo "✅ Health check passed (HTTP $HTTP_CODE)"
