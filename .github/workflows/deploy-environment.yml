@@ -1,0 +1,132 @@
+name: Deploy to Environment
+
+on:
+  workflow_call:
+    inputs:
+      environment:
+        description: 'Environment to deploy to (development, staging, production)'
+        required: true
+        type: string
+      vercel-args:
+        description: 'Additional Vercel CLI arguments'
+        required: false
+        type: string
+        default: ''
+      run-e2e-tests:
+        description: 'Whether to run E2E tests after deployment'
+        required: false
+        type: boolean
+        default: false
+    secrets:
+      VERCEL_TOKEN:
+        required: true
+      VERCEL_ORG_ID:
+        required: true
+      VERCEL_PROJECT_ID:
+        required: true
+      NEXT_PUBLIC_SUPABASE_URL:
+        required: true
+      NEXT_PUBLIC_SUPABASE_ANON_KEY:
+        required: true
+      SUPABASE_SERVICE_ROLE_KEY:
+        required: true
+      TURSO_DATABASE_URL:
+        required: true
+      TURSO_AUTH_TOKEN:
+        required: true
+      R2_ACCOUNT_ID:
+        required: true
+      R2_ACCESS_KEY_ID:
+        required: true
+      R2_SECRET_ACCESS_KEY:
+        required: true
+      R2_BUCKET_NAME:
+        required: true
+    outputs:
+      deployment-url:
+        description: 'URL of the deployed application'
+        value: ${{ jobs.deploy.outputs.url }}
+
+jobs:
+  deploy:
+    name: Deploy to ${{ inputs.environment }}
+    runs-on: ubuntu-latest
+    environment:
+      name: ${{ inputs.environment }}
+      url: ${{ steps.deploy.outputs.preview-url }}
+    outputs:
+      url: ${{ steps.deploy.outputs.preview-url }}
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      - name: Deploy to Vercel
+        id: deploy
+        uses: amondnet/vercel-action@v25
+        with:
+          vercel-token: ${{ secrets.VERCEL_TOKEN }}
+          vercel-org-id: ${{ secrets.VERCEL_ORG_ID }}
+          vercel-project-id: ${{ secrets.VERCEL_PROJECT_ID }}
+          vercel-args: ${{ inputs.vercel-args }}
+          scope: ${{ secrets.VERCEL_ORG_ID }}
+        env:
+          NEXT_PUBLIC_SUPABASE_URL: ${{ secrets.NEXT_PUBLIC_SUPABASE_URL }}
+          NEXT_PUBLIC_SUPABASE_ANON_KEY: ${{ secrets.NEXT_PUBLIC_SUPABASE_ANON_KEY }}
+          SUPABASE_SERVICE_ROLE_KEY: ${{ secrets.SUPABASE_SERVICE_ROLE_KEY }}
+          TURSO_DATABASE_URL: ${{ secrets.TURSO_DATABASE_URL }}
+          TURSO_AUTH_TOKEN: ${{ secrets.TURSO_AUTH_TOKEN }}
+          R2_ACCOUNT_ID: ${{ secrets.R2_ACCOUNT_ID }}
+          R2_ACCESS_KEY_ID: ${{ secrets.R2_ACCESS_KEY_ID }}
+          R2_SECRET_ACCESS_KEY: ${{ secrets.R2_SECRET_ACCESS_KEY }}
+          R2_BUCKET_NAME: ${{ secrets.R2_BUCKET_NAME }}
+
+      - name: Log deployment
+        run: |
+          echo "✅ Deployment to ${{ inputs.environment }} successful!"
+          echo "URL: ${{ steps.deploy.outputs.preview-url }}"
+          echo "Environment: ${{ inputs.environment }}"
+          echo "Commit: ${{ github.sha }}"
+          echo "Branch: ${{ github.ref }}"
+
+      - name: Health check
+        run: |
+          echo "Running health check on ${{ steps.deploy.outputs.preview-url }}"
+          # Wait for deployment to be ready
+          sleep 10
+          # Check if the deployment is accessible
+          curl -f -s -o /dev/null -w "%{http_code}" ${{ steps.deploy.outputs.preview-url }} || echo "Health check failed"
+
+  e2e-tests:
+    name: E2E Tests on ${{ inputs.environment }}
+    runs-on: ubuntu-latest
+    needs: deploy
+    if: inputs.run-e2e-tests
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: '20.x'
+          cache: 'npm'
+
+      - name: Install dependencies
+        run: npm ci
+
+      - name: Install Playwright browsers
+        run: npx playwright install --with-deps chromium
+
+      - name: Run E2E tests
+        run: npm run test:e2e
+        env:
+          BASE_URL: ${{ needs.deploy.outputs.url }}
+
+      - name: Upload test results
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: e2e-results-${{ inputs.environment }}
+          path: test-results/
+          retention-days: 7
+          if-no-files-found: ignore

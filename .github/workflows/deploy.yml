@@ -110,50 +110,53 @@ jobs:
           retention-days: 7
           if-no-files-found: ignore
 
-  # Stage 3: Deploy to Staging (Vercel Preview)
+  # Stage 3: Deploy to Staging
   deploy-staging:
     name: Deploy to Staging
-    runs-on: ubuntu-latest
+    needs: test
+    if: github.event_name == 'workflow_dispatch' || (github.event_name == 'push' && startsWith(github.ref, 'refs/tags/v') && contains(github.ref, '-staging'))
+    uses: ./.github/workflows/deploy-environment.yml
+    with:
+      environment: staging
+      vercel-args: ''
+      run-e2e-tests: true
+    secrets:
+      VERCEL_TOKEN: ${{ secrets.VERCEL_TOKEN }}
+      VERCEL_ORG_ID: ${{ secrets.VERCEL_ORG_ID }}
+      VERCEL_PROJECT_ID: ${{ secrets.VERCEL_PROJECT_ID }}
+      NEXT_PUBLIC_SUPABASE_URL: ${{ secrets.STAGING_SUPABASE_URL }}
+      NEXT_PUBLIC_SUPABASE_ANON_KEY: ${{ secrets.STAGING_SUPABASE_ANON_KEY }}
+      SUPABASE_SERVICE_ROLE_KEY: ${{ secrets.STAGING_SUPABASE_SERVICE_ROLE_KEY }}
+      TURSO_DATABASE_URL: ${{ secrets.STAGING_TURSO_DATABASE_URL }}
+      TURSO_AUTH_TOKEN: ${{ secrets.STAGING_TURSO_AUTH_TOKEN }}
+      R2_ACCOUNT_ID: ${{ secrets.STAGING_R2_ACCOUNT_ID }}
+      R2_ACCESS_KEY_ID: ${{ secrets.STAGING_R2_ACCESS_KEY_ID }}
+      R2_SECRET_ACCESS_KEY: ${{ secrets.STAGING_R2_SECRET_ACCESS_KEY }}
+      R2_BUCKET_NAME: ${{ secrets.STAGING_R2_BUCKET_NAME }}
+
+  # Stage 3.5: Deploy to Development
+  deploy-development:
+    name: Deploy to Development
     needs: test
     if: github.event_name == 'push' && github.ref == 'refs/heads/develop'
-    environment:
-      name: staging
-      url: ${{ steps.deploy.outputs.preview-url }}
-    steps:
-      - name: Checkout code
-        uses: actions/checkout@v4
-
-      - name: Deploy to Vercel (Preview)
-        id: deploy
-        uses: amondnet/vercel-action@v25
-        with:
-          vercel-token: ${{ secrets.VERCEL_TOKEN }}
-          vercel-org-id: ${{ secrets.VERCEL_ORG_ID }}
-          vercel-project-id: ${{ secrets.VERCEL_PROJECT_ID }}
-          scope: ${{ secrets.VERCEL_ORG_ID }}
-        env:
-          NEXT_PUBLIC_SUPABASE_URL: ${{ secrets.STAGING_SUPABASE_URL }}
-          NEXT_PUBLIC_SUPABASE_ANON_KEY: ${{ secrets.STAGING_SUPABASE_ANON_KEY }}
-          SUPABASE_SERVICE_ROLE_KEY: ${{ secrets.STAGING_SUPABASE_SERVICE_ROLE_KEY }}
-          TURSO_DATABASE_URL: ${{ secrets.STAGING_TURSO_DATABASE_URL }}
-          TURSO_AUTH_TOKEN: ${{ secrets.STAGING_TURSO_AUTH_TOKEN }}
-          R2_ACCOUNT_ID: ${{ secrets.STAGING_R2_ACCOUNT_ID }}
-          R2_ACCESS_KEY_ID: ${{ secrets.STAGING_R2_ACCESS_KEY_ID }}
-          R2_SECRET_ACCESS_KEY: ${{ secrets.STAGING_R2_SECRET_ACCESS_KEY }}
-          R2_BUCKET_NAME: ${{ secrets.STAGING_R2_BUCKET_NAME }}
-
-      - name: Run E2E tests on staging
-        run: echo "E2E tests would run against ${{ steps.deploy.outputs.preview-url }}"
-        # Uncomment when E2E tests are ready:
-        # run: npm run test:e2e
-        # env:
-        #   BASE_URL: ${{ steps.deploy.outputs.preview-url }}
-
-      - name: Log latency metrics
-        run: |
-          echo "Logging latency metrics for staging deployment"
-          echo "Deployment URL: ${{ steps.deploy.outputs.preview-url }}"
-          # Add actual latency testing here
+    uses: ./.github/workflows/deploy-environment.yml
+    with:
+      environment: development
+      vercel-args: ''
+      run-e2e-tests: false
+    secrets:
+      VERCEL_TOKEN: ${{ secrets.VERCEL_TOKEN }}
+      VERCEL_ORG_ID: ${{ secrets.VERCEL_ORG_ID }}
+      VERCEL_PROJECT_ID: ${{ secrets.VERCEL_PROJECT_ID }}
+      NEXT_PUBLIC_SUPABASE_URL: ${{ secrets.DEV_SUPABASE_URL }}
+      NEXT_PUBLIC_SUPABASE_ANON_KEY: ${{ secrets.DEV_SUPABASE_ANON_KEY }}
+      SUPABASE_SERVICE_ROLE_KEY: ${{ secrets.DEV_SUPABASE_SERVICE_ROLE_KEY }}
+      TURSO_DATABASE_URL: ${{ secrets.DEV_TURSO_DATABASE_URL }}
+      TURSO_AUTH_TOKEN: ${{ secrets.DEV_TURSO_AUTH_TOKEN }}
+      R2_ACCOUNT_ID: ${{ secrets.DEV_R2_ACCOUNT_ID }}
+      R2_ACCESS_KEY_ID: ${{ secrets.DEV_R2_ACCESS_KEY_ID }}
+      R2_SECRET_ACCESS_KEY: ${{ secrets.DEV_R2_SECRET_ACCESS_KEY }}
+      R2_BUCKET_NAME: ${{ secrets.DEV_R2_BUCKET_NAME }}
 
   # Stage 4: Production Approval
   production-approval:
