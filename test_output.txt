@@ -1,0 +1,202 @@
+
+Running 2 tests using 2 workers
+
+[1A[2K[1/2] [chromium] › tests/e2e/progression.spec.ts:8:7 › Progression System › should persist progress across reloads
+[1A[2K[2/2] [chromium] › tests/e2e/progression.spec.ts:53:7 › Progression System › should allow purchasing upgrades
+[1A[2K[2m[WebServer] [22m⚠️  Using default environment values for development
+
+[1A[2K[2m[WebServer] [22m [31m[1m⨯[22m[39m Error: supabaseUrl is required.
+[2m[WebServer] [22m    at module evaluation (lib/supabase/server.ts:7:42)
+[2m[WebServer] [22m    at <unknown> (app/actions/game.ts:7:1)
+[2m[WebServer] [22m    at module evaluation (.next/dev/server/chunks/ssr/[root-of-the-server]__2a02972c._.js:364:30)
+[2m[WebServer] [22m    at <unknown> (.next-internal/server/app/page/actions.js (server actions loader):1:1)
+[2m[WebServer] [22m    at module evaluation (.next/dev/server/chunks/ssr/[root-of-the-server]__2a02972c._.js:700:30)
+[2m[WebServer] [22m    at <unknown> (.next/dev/server/chunks/ssr/[root-of-the-server]__2a02972c._.js:741:598)
+[2m[WebServer] [22m    at module evaluation (.next/dev/server/chunks/ssr/[root-of-the-server]__2a02972c._.js:723:30)
+[2m[WebServer] [22m[0m [90m 5 |[39m
+[2m[WebServer] [22m [90m 6 |[39m [90m// This client has admin privileges. Use with caution.[39m
+[2m[WebServer] [22m[31m[1m>[22m[39m[90m 7 |[39m [36mexport[39m [36mconst[39m supabaseAdmin [33m=[39m createClient(supabaseUrl[33m,[39m supabaseServiceRoleKey)[33m;[39m
+[2m[WebServer] [22m [90m   |[39m                                          [31m[1m^[22m[39m
+[2m[WebServer] [22m [90m 8 |[39m[0m {
+[2m[WebServer] [22m  digest: [32m'2992328768'[39m
+[2m[WebServer] [22m}
+
+[1A[2K[2m[WebServer] [22mError: supabaseUrl is required.
+[2m[WebServer] [22m    at module evaluation (lib/supabase/server.ts:7:42)
+[2m[WebServer] [22m    at <unknown> (app/actions/game.ts:7:1)
+[2m[WebServer] [22m    at module evaluation (.next/dev/server/chunks/ssr/[root-of-the-server]__2a02972c._.js:364:30)
+[2m[WebServer] [22m    at <unknown> (.next-internal/server/app/page/actions.js (server actions loader):1:1)
+[2m[WebServer] [22m    at module evaluation (.next/dev/server/chunks/ssr/[root-of-the-server]__2a02972c._.js:700:30)
+[2m[WebServer] [22m    at <unknown> (.next/dev/server/chunks/ssr/[root-of-the-server]__2a02972c._.js:741:598)
+[2m[WebServer] [22m    at module evaluation (.next/dev/server/chunks/ssr/[root-of-the-server]__2a02972c._.js:723:30)
+[2m[WebServer] [22m[0m [90m 5 |[39m
+[2m[WebServer] [22m [90m 6 |[39m [90m// This client has admin privileges. Use with caution.[39m
+[2m[WebServer] [22m[31m[1m>[22m[39m[90m 7 |[39m [36mexport[39m [36mconst[39m supabaseAdmin [33m=[39m createClient(supabaseUrl[33m,[39m supabaseServiceRoleKey)[33m;[39m
+[2m[WebServer] [22m [90m   |[39m                                          [31m[1m^[22m[39m
+[2m[WebServer] [22m [90m 8 |[39m[0m {
+[2m[WebServer] [22m  digest: [32m'2992328768'[39m
+[2m[WebServer] [22m}
+
+[1A[2K[2m[WebServer] [22m [31m[1m⨯[22m[39m unhandledRejection: Error: supabaseUrl is required.
+[2m[WebServer] [22m    at module evaluation (lib/supabase/server.ts:7:42)
+[2m[WebServer] [22m    at <unknown> (app/actions/game.ts:7:1)
+[2m[WebServer] [22m    at module evaluation (.next/dev/server/chunks/ssr/[root-of-the-server]__2a02972c._.js:364:30)
+[2m[WebServer] [22m    at <unknown> (.next-internal/server/app/page/actions.js (server actions loader):1:1)
+[2m[WebServer] [22m    at module evaluation (.next/dev/server/chunks/ssr/[root-of-the-server]__2a02972c._.js:700:30)
+[2m[WebServer] [22m    at <unknown> (.next/dev/server/chunks/ssr/[root-of-the-server]__2a02972c._.js:741:598)
+[2m[WebServer] [22m    at module evaluation (.next/dev/server/chunks/ssr/[root-of-the-server]__2a02972c._.js:723:30)
+[2m[WebServer] [22m[0m [90m 5 |[39m
+[2m[WebServer] [22m [90m 6 |[39m [90m// This client has admin privileges. Use with caution.[39m
+[2m[WebServer] [22m[31m[1m>[22m[39m[90m 7 |[39m [36mexport[39m [36mconst[39m supabaseAdmin [33m=[39m createClient(supabaseUrl[33m,[39m supabaseServiceRoleKey)[33m;[39m
+[2m[WebServer] [22m [90m   |[39m                                          [31m[1m^[22m[39m
+[2m[WebServer] [22m [90m 8 |[39m[0m {
+[2m[WebServer] [22m  digest: [32m'2992328768'[39m
+[2m[WebServer] [22m}
+
+[1A[2K[2m[WebServer] [22m [31m[1m⨯[22m[39m unhandledRejection:  Error: supabaseUrl is required.
+[2m[WebServer] [22m    at module evaluation (lib/supabase/server.ts:7:42)
+[2m[WebServer] [22m    at <unknown> (app/actions/game.ts:7:1)
+[2m[WebServer] [22m    at module evaluation (.next/dev/server/chunks/ssr/[root-of-the-server]__2a02972c._.js:364:30)
+[2m[WebServer] [22m    at <unknown> (.next-internal/server/app/page/actions.js (server actions loader):1:1)
+[2m[WebServer] [22m    at module evaluation (.next/dev/server/chunks/ssr/[root-of-the-server]__2a02972c._.js:700:30)
+[2m[WebServer] [22m    at <unknown> (.next/dev/server/chunks/ssr/[root-of-the-server]__2a02972c._.js:741:598)
+[2m[WebServer] [22m    at module evaluation (.next/dev/server/chunks/ssr/[root-of-the-server]__2a02972c._.js:723:30)
+[2m[WebServer] [22m[0m [90m 5 |[39m
+[2m[WebServer] [22m [90m 6 |[39m [90m// This client has admin privileges. Use with caution.[39m
+[2m[WebServer] [22m[31m[1m>[22m[39m[90m 7 |[39m [36mexport[39m [36mconst[39m supabaseAdmin [33m=[39m createClient(supabaseUrl[33m,[39m supabaseServiceRoleKey)[33m;[39m
+[2m[WebServer] [22m [90m   |[39m                                          [31m[1m^[22m[39m
+[2m[WebServer] [22m [90m 8 |[39m[0m {
+[2m[WebServer] [22m  digest: [32m'2992328768'[39m
+[2m[WebServer] [22m}
+
+[1A[2K[2m[WebServer] [22mError: supabaseUrl is required.
+[2m[WebServer] [22m    at module evaluation (lib/supabase/server.ts:7:42)
+[2m[WebServer] [22m    at <unknown> (app/actions/game.ts:7:1)
+[2m[WebServer] [22m    at module evaluation (.next/dev/server/chunks/ssr/[root-of-the-server]__2a02972c._.js:364:30)
+[2m[WebServer] [22m    at <unknown> (.next-internal/server/app/page/actions.js (server actions loader):1:1)
+[2m[WebServer] [22m    at module evaluation (.next/dev/server/chunks/ssr/[root-of-the-server]__2a02972c._.js:700:30)
+[2m[WebServer] [22m    at <unknown> (.next/dev/server/chunks/ssr/[root-of-the-server]__2a02972c._.js:741:598)
+[2m[WebServer] [22m    at module evaluation (.next/dev/server/chunks/ssr/[root-of-the-server]__2a02972c._.js:723:30)
+[2m[WebServer] [22m[0m [90m 5 |[39m
+[2m[WebServer] [22m [90m 6 |[39m [90m// This client has admin privileges. Use with caution.[39m
+[2m[WebServer] [22m[31m[1m>[22m[39m[90m 7 |[39m [36mexport[39m [36mconst[39m supabaseAdmin [33m=[39m createClient(supabaseUrl[33m,[39m supabaseServiceRoleKey)[33m;[39m
+[2m[WebServer] [22m [90m   |[39m                                          [31m[1m^[22m[39m
+[2m[WebServer] [22m [90m 8 |[39m[0m {
+[2m[WebServer] [22m  digest: [32m'2992328768'[39m
+[2m[WebServer] [22m}
+[2m[WebServer] [22m [31m[1m⨯[22m[39m unhandledRejection: Error: supabaseUrl is required.
+[2m[WebServer] [22m    at module evaluation (lib/supabase/server.ts:7:42)
+[2m[WebServer] [22m    at <unknown> (app/actions/game.ts:7:1)
+[2m[WebServer] [22m    at module evaluation (.next/dev/server/chunks/ssr/[root-of-the-server]__2a02972c._.js:364:30)
+[2m[WebServer] [22m    at <unknown> (.next-internal/server/app/page/actions.js (server actions loader):1:1)
+[2m[WebServer] [22m    at module evaluation (.next/dev/server/chunks/ssr/[root-of-the-server]__2a02972c._.js:700:30)
+[2m[WebServer] [22m    at <unknown> (.next/dev/server/chunks/ssr/[root-of-the-server]__2a02972c._.js:741:598)
+[2m[WebServer] [22m    at module evaluation (.next/dev/server/chunks/ssr/[root-of-the-server]__2a02972c._.js:723:30)
+[2m[WebServer] [22m[0m [90m 5 |[39m
+[2m[WebServer] [22m [90m 6 |[39m [90m// This client has admin privileges. Use with caution.[39m
+[2m[WebServer] [22m[31m[1m>[22m[39m[90m 7 |[39m [36mexport[39m [36mconst[39m supabaseAdmin [33m=[39m createClient(supabaseUrl[33m,[39m supabaseServiceRoleKey)[33m;[39m
+[2m[WebServer] [22m [90m   |[39m                                          [31m[1m^[22m[39m
+[2m[WebServer] [22m [90m 8 |[39m[0m {
+[2m[WebServer] [22m  digest: [32m'2992328768'[39m
+[2m[WebServer] [22m}
+
+[1A[2K[2m[WebServer] [22m [31m[1m⨯[22m[39m unhandledRejection:  Error: supabaseUrl is required.
+[2m[WebServer] [22m    at module evaluation (lib/supabase/server.ts:7:42)
+[2m[WebServer] [22m    at <unknown> (app/actions/game.ts:7:1)
+[2m[WebServer] [22m    at module evaluation (.next/dev/server/chunks/ssr/[root-of-the-server]__2a02972c._.js:364:30)
+[2m[WebServer] [22m    at <unknown> (.next-internal/server/app/page/actions.js (server actions loader):1:1)
+[2m[WebServer] [22m    at module evaluation (.next/dev/server/chunks/ssr/[root-of-the-server]__2a02972c._.js:700:30)
+[2m[WebServer] [22m    at <unknown> (.next/dev/server/chunks/ssr/[root-of-the-server]__2a02972c._.js:741:598)
+[2m[WebServer] [22m    at module evaluation (.next/dev/server/chunks/ssr/[root-of-the-server]__2a02972c._.js:723:30)
+[2m[WebServer] [22m[0m [90m 5 |[39m
+[2m[WebServer] [22m [90m 6 |[39m [90m// This client has admin privileges. Use with caution.[39m
+[2m[WebServer] [22m[31m[1m>[22m[39m[90m 7 |[39m [36mexport[39m [36mconst[39m supabaseAdmin [33m=[39m createClient(supabaseUrl[33m,[39m supabaseServiceRoleKey)[33m;[39m
+[2m[WebServer] [22m [90m   |[39m                                          [31m[1m^[22m[39m
+[2m[WebServer] [22m [90m 8 |[39m[0m {
+[2m[WebServer] [22m  digest: [32m'2992328768'[39m
+[2m[WebServer] [22m}
+
+[1A[2K[2m[WebServer] [22m [31m[1m⨯[22m[39m Error: supabaseUrl is required.
+[2m[WebServer] [22m    at module evaluation (lib/supabase/server.ts:7:42)
+[2m[WebServer] [22m    at <unknown> (app/actions/game.ts:7:1)
+[2m[WebServer] [22m    at module evaluation (.next/dev/server/chunks/ssr/[root-of-the-server]__2a02972c._.js:364:30)
+[2m[WebServer] [22m    at <unknown> (.next-internal/server/app/page/actions.js (server actions loader):1:1)
+[2m[WebServer] [22m    at module evaluation (.next/dev/server/chunks/ssr/[root-of-the-server]__2a02972c._.js:700:30)
+[2m[WebServer] [22m    at <unknown> (.next/dev/server/chunks/ssr/[root-of-the-server]__2a02972c._.js:741:598)
+[2m[WebServer] [22m    at module evaluation (.next/dev/server/chunks/ssr/[root-of-the-server]__2a02972c._.js:723:30)
+[2m[WebServer] [22m[0m [90m 5 |[39m
+[2m[WebServer] [22m [90m 6 |[39m [90m// This client has admin privileges. Use with caution.[39m
+[2m[WebServer] [22m[31m[1m>[22m[39m[90m 7 |[39m [36mexport[39m [36mconst[39m supabaseAdmin [33m=[39m createClient(supabaseUrl[33m,[39m supabaseServiceRoleKey)[33m;[39m
+[2m[WebServer] [22m [90m   |[39m                                          [31m[1m^[22m[39m
+[2m[WebServer] [22m [90m 8 |[39m[0m {
+[2m[WebServer] [22m  digest: [32m'2992328768'[39m
+[2m[WebServer] [22m}
+
+[1A[2K[chromium] › tests/e2e/progression.spec.ts:8:7 › Progression System › should persist progress across reloads
+Game is still loading...
+
+[1A[2K[2m[WebServer] [22m [31m[1m⨯[22m[39m Error: supabaseUrl is required.
+[2m[WebServer] [22m    at module evaluation (lib/supabase/server.ts:7:42)
+[2m[WebServer] [22m    at <unknown> (app/actions/game.ts:7:1)
+[2m[WebServer] [22m    at module evaluation (.next/dev/server/chunks/ssr/[root-of-the-server]__2a02972c._.js:364:30)
+[2m[WebServer] [22m    at <unknown> (.next-internal/server/app/page/actions.js (server actions loader):1:1)
+[2m[WebServer] [22m    at module evaluation (.next/dev/server/chunks/ssr/[root-of-the-server]__2a02972c._.js:700:30)
+[2m[WebServer] [22m    at <unknown> (.next/dev/server/chunks/ssr/[root-of-the-server]__2a02972c._.js:741:598)
+[2m[WebServer] [22m    at module evaluation (.next/dev/server/chunks/ssr/[root-of-the-server]__2a02972c._.js:723:30)
+[2m[WebServer] [22m[0m [90m 5 |[39m
+[2m[WebServer] [22m [90m 6 |[39m [90m// This client has admin privileges. Use with caution.[39m
+[2m[WebServer] [22m[31m[1m>[22m[39m[90m 7 |[39m [36mexport[39m [36mconst[39m supabaseAdmin [33m=[39m createClient(supabaseUrl[33m,[39m supabaseServiceRoleKey)[33m;[39m
+[2m[WebServer] [22m [90m   |[39m                                          [31m[1m^[22m[39m
+[2m[WebServer] [22m [90m 8 |[39m[0m {
+[2m[WebServer] [22m  digest: [32m'2992328768'[39m
+[2m[WebServer] [22m}
+
+[1A[2K[2m[WebServer] [22m [31m[1m⨯[22m[39m Error: supabaseUrl is required.
+[2m[WebServer] [22m    at module evaluation (lib/supabase/server.ts:7:42)
+[2m[WebServer] [22m    at <unknown> (app/actions/game.ts:7:1)
+[2m[WebServer] [22m    at module evaluation (.next/dev/server/chunks/ssr/[root-of-the-server]__2a02972c._.js:364:30)
+[2m[WebServer] [22m    at <unknown> (.next-internal/server/app/page/actions.js (server actions loader):1:1)
+[2m[WebServer] [22m    at module evaluation (.next/dev/server/chunks/ssr/[root-of-the-server]__2a02972c._.js:700:30)
+[2m[WebServer] [22m    at <unknown> (.next/dev/server/chunks/ssr/[root-of-the-server]__2a02972c._.js:741:598)
+[2m[WebServer] [22m    at module evaluation (.next/dev/server/chunks/ssr/[root-of-the-server]__2a02972c._.js:723:30)
+[2m[WebServer] [22m[0m [90m 5 |[39m
+[2m[WebServer] [22m [90m 6 |[39m [90m// This client has admin privileges. Use with caution.[39m
+[2m[WebServer] [22m[31m[1m>[22m[39m[90m 7 |[39m [36mexport[39m [36mconst[39m supabaseAdmin [33m=[39m createClient(supabaseUrl[33m,[39m supabaseServiceRoleKey)[33m;[39m
+[2m[WebServer] [22m [90m   |[39m                                          [31m[1m^[22m[39m
+[2m[WebServer] [22m [90m 8 |[39m[0m {
+[2m[WebServer] [22m  digest: [32m'2992328768'[39m
+[2m[WebServer] [22m}
+
+[1A[2KPage content: <!DOCTYPE html><html lang="en"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width, initial-scale=1"><link rel="stylesheet" href="/_next/static/chunks/%5Broot-of-the-server%5D__28bc9c2a._.css" data-precedence="next_static/chunks/[root-of-the-server]__28bc9c2a._.css"><link rel="preload" as="script" fetchpriority="low" href="/_next/static/chunks/%5Bturbopack%5D_browser_dev_hmr-client_hmr-client_ts_bae88007._.js"><script src="/_next/static/chunks/node_modules_next_dist_compiled_react-dom_1e674e59._.js" async=""></script><script src="/_next/static/chunks/node_modules_next_dist_compiled_react-server-dom-turbopack_9212ccad._.js" async=""></script><script src="/_next/static/chunks/node_modules_next_dist_compiled_next-devtools_index_1dd7fb59.js" async=""></script><script src="/_next/static/chunks/node_modules_next_dist_compiled_a0e4c7b4._.js" async=""></script><script src="/_next/static/chunks/node_modules_next_dist_client_aaee43fe._.js" async=""></script><script src="/_next/static/chunks/node_modules_next_dist_7a8122d0._.js" async=""></script><script src="/_next/static/chunks/node_modules_%40swc_helpers_cjs_d80fb378._.js" async=""></script><script src="/_next/static/chunks/_a0ff3932._.js" async=""></script><script src="/_next/static/chunks/turbopack-_45210fd5._.js" async=""></script><script src="/_next/static/chunks/node_modules_next_dist_094231d7._.js" async=""></script><script src="/_next/static/chunks/app_favicon_ico_mjs_756560dc._.js" async=""></script><script src="/_next/static/chunks/app_layout_tsx_78cdd4a3._.js" async=""></script><script src="/_next/static/chunks/_d8815b53._.js" async=""></script><script src="/_next/static/chunks/node_modules_next_dist_compiled_crypto-browserify_index_44cf344e.js" async=""></script><script src="/_next/static/chunks/node_modules_next_dist_compiled_13f06b32._.js" async=""></script><script src="/_next/static/chunks/47a44_dist_build_webpack_loaders_next-flight-loader_action-client-wrapper_82e62d8b.js" async=""></script><script src="/_next/static/chunks/app_page_tsx_607b5035._.js" async=""></script><script src="/_next/static/chunks/node_modules_next_dist_client_components_builtin_global-error_78cdd4a3.js" async=""></script><meta name="next-size-adjust" content=""><title>Create Next App</title><meta name="description" content="Generated by create next app"><link rel="icon" href="/favicon.ico?favicon.0b3bf435.ico" sizes="256x256" type="image/x-icon"><script src="/_next/static/chunks/node_modules_next_dist_build_polyfills_polyfill-nomodule.js" nomodule=""></script><script src="/_next/static/chunks/%5Bturbopack%5D_browser_dev_hmr-client_hmr-client_ts_c8c997ce._.js"></script><script src="/_next/static/chunks/%5Bturbopack%5D_browser_dev_hmr-client_hmr-client_ts_f26f265a._.js"></script><link rel="preload" href="/_next/static/media/797e433ab948586e-s.p.dbea232f.woff2" as="font" crossorigin="" type="font/woff2"><link rel="preload" href="/_next/static/media/caa3a2e1cccd8315-s.p.853070df.woff2" as="font" crossorigin="" type="font/woff2"><style>@font-face{font-family:'__nextjs-Geist';font-style:normal;font-weight:400 600;font-display:swap;src:url(/__nextjs_font/geist-latin-ext.woff2) format('woff2');unicode-range:U+0100-02BA,U+02BD-02C5,U+02C7-02CC,U+02CE-02D7,U+02DD-02FF,U+0304,U+0308,U+0329,U+1D00-1DBF,U+1E00-1E9F,U+1EF2-1EFF,U+2020,U+20A0-20AB,U+20AD-20C0,U+2113,U+2C60-2C7F,U+A720-A7FF}@font-face{font-family:'__nextjs-Geist Mono';font-style:normal;font-weight:400 600;font-display:swap;src:url(/__nextjs_font/geist-mono-latin-ext.woff2) format('woff2');unicode-range:U+0100-02BA,U+02BD-02C5,U+02C7-02CC,U+02CE-02D7,U+02DD-02FF,U+0304,U+0308,U+0329,U+1D00-1DBF,U+1E00-1E9F,U+1EF2-1EFF,U+2020,U+20A0-20AB,U+20AD-20C0,U+2113,U+2C60-2C7F,U+A720-A7FF}@font-face{font-family:'__nextjs-Geist';font-style:normal;font-weight:400 600;font-display:swap;src:url(/__nextjs_font/geist-latin.woff2) format('woff2');unicode-range:U+0000-00FF,U+0131,U+0152-0153,U+02BB-02BC,U+02C6,U+02DA,U+02DC,U+0304,U+0308,U+0329,U+2000-206F,U+20AC,U+2122,U+2191,U+2193,U+2212,U+2215,U+FEFF,U+FFFD}@font-face{font-family:'__nextjs-Geist Mono';font-style:normal;font-weight:400 600;font-display:swap;src:url(/__nextjs_font/geist-mono-latin.woff2) format('woff2');unicode-range:U+0000-00FF,U+0131,U+0152-0153,U+02BB-02BC,U+02C6,U+02DA,U+02DC,U+0304,U+0308,U+0329,U+2000-206F,U+20AC,U+2122,U+2191,U+2193,U+2212,U+2215,U+FEFF,U+FFFD}</style></head><body class="geist_a71539c9-module__T19VSG__variable geist_mono_8d43a2aa-module__8Li5zG__variable antialiased"><div hidden=""><!--$--><!--/$--></div><div class="min-h-screen bg-gradient-to-br from-slate-900 via-slate-800 to-slate-900"><main class="container mx-auto py-8"><div class="text-center mb-8"><h1 class="text-5xl font-bold text-white mb-2">♾️ Infinite Minesweeper</h1><p class="text-gray-300">An endless minesweeper experience with deterministic gameplay</p></div><div class="flex items-center justify-center h-screen"><div class="text-xl">Loading game...</div></div></main></div><!--$--><!--/$--><script id="_R_">self.__next_r="fIB4twqd4gty1NxJL4QeD"</script><script src="/_next/static/chunks/%5Bturbopack%5D_browser_dev_hmr-client_hmr-client_ts_bae88007._.js" async=""></script><script>(self.__next_f=self.__next_f||[]).push([0])</script><script>self.__next_f.push([1,"7:I[\"[project]/node_modules/next/dist/next-devtools/userspace/app/segment-explorer-node.js [app-client] (ecmascript)\",[\"/_next/static/chunks/node_modules_next_dist_094231d7._.js\",\"/_next/static/chunks/app_favicon_ico_mjs_756560dc._.js\"],\"SegmentViewNode\"]\n9:\"$Sreact.fragment\"\n19:I[\"[project]/node_modules/next/dist/client/components/layout-router.js [app-client] (ecmascript)\",[\"/_next/static/chunks/node_modules_next_dist_094231d7._.js\",\"/_next/static/chunks/app_favicon_ico_mjs_756560dc._.js\"],\"default\"]\n1b:I[\"[project]/node_modules/next/dist/client/components/render-from-template-context.js [app-client] (ecmascript)\",[\"/_next/static/chunks/node_modules_next_dist_094231d7._.js\",\"/_next/static/chunks/app_favicon_ico_mjs_756560dc._.js\"],\"default\"]\n35:I[\"[project]/components/GameBoard.tsx [app-client] (ecmascript)\",[\"/_next/static/chunks/app_layout_tsx_78cdd4a3._.js\",\"/_next/static/chunks/_d8815b53._.js\",\"/_next/static/chunks/node_modules_next_dist_compiled_crypto-browserify_index_44cf344e.js\",\"/_next/static/chunks/node_modules_next_dist_compiled_13f06b32._.js\",\"/_next/static/chunks/47a44_dist_build_webpack_loaders_next-flight-loader_action-client-wrapper_82e62d8b.js\",\"/_next/static/chunks/app_page_tsx_607b5035._.js\"],\"GameBoard\"]\n3e:I[\"[project]/node_modules/next/dist/lib/framework/boundary-components.js [app-client] (ecmascript)\",[\"/_next/static/chunks/node_modules_next_dist_094231d7._.js\",\"/_next/static/chunks/app_favicon_ico_mjs_756560dc._.js\"],\"OutletBoundary\"]\n40:\"$Sreact.suspense\"\n49:I[\"[project]/node_modules/next/dist/lib/framework/boundary-components.js [app-client] (ecmascript)\",[\"/_next/static/chunks/node_modules_next_dist_094231d7._.js\",\"/_next/static/chunks/app_favicon_ico_mjs_756560dc._.js\"],\"ViewportBoundary\"]\n4f:I[\"[project]/node_modules/next/dist/lib/framework/boundary-components.js [app-client] (ecmascript)\",[\"/_next/static/chunks/node_modules_next_dist_094231d7._.js\",\"/_next/static/chunks/app_favicon_ico_mjs_756560dc._.js\"],\"MetadataBoundary\"]\n54:I[\"[project]/node_modules/next/dist/client/components/builtin/global-error.js [app-client] (ecmascript)\",[\"/_next/static/chunks/node_modules_next_dist_client_components_builtin_global-error_78cdd4a3.js\"],\"default\"]\n5c:I[\"[project]/node_modules/next/dist/lib/metadata/generate/icon-mark.js [app-client] (ecmascript)\",[\"/_next/static/chunks/node_modules_next_dist_094231d7._.js\",\"/_next/static/chunks/app_favicon_ico_mjs_756560dc._.js\"],\"IconMark\"]\n:HL[\"/_next/static/chunks/%5Broot-of-the-server%5D__28bc9c2a._.css\",\"style\"]\n:HL[\"/_next/static/media/797e433ab948586e-s.p.dbea232f.woff2\",\"font\",{\"crossOrigin\":\"\",\"type\":\"font/woff2\"}]\n:HL[\"/_next/static/media/caa3a2e1cccd8315-s.p.853070df.woff2\",\"font\",{\"crossOrigin\":\"\",\"type\":\"font/woff2\"}]\n:N1764201955689.1978\n3:\"$EObject.defineProperty(()=\u003e{ctx.componentMod.preloadStyle(fullHref,ctx.renderOpts.crossOrigin,ctx.nonce)},\\\"name\\\",{value:\\\"\\\"})\"\n4:\"$EObject.defineProperty(()=\u003e{ctx.componentMod.preloadFont(href,type,ctx.renderOpts.crossOrigin,ctx.nonce)},\\\"name\\\",{value:\\\"\\\"})\"\n5:\"$EObject.defineProperty(()=\u003e{ctx.componentMod.preloadFont(href,type,ctx.renderOpts.crossOrigin,ctx.nonce)},\\\"name\\\",{value:\\\"\\\"})\"\n2:{\"name\":\"Preloads\",\"key\":null,\"env\":\"Server\",\"stack\":[],\"props\":{\"preloadCallbacks\":[\"$3\",\"$4\",\"$5\"]}}\n6:[]\n8:[]\na:[[\"Array.map\",\"\",0,0,0,0,false]]\nb:[[\"Array.map\",\"\",0,0,0,0,false]]\ne:I[\"[project]/node_modules/next/dist/client/components/layout-router.js [app-client] (ecmascript)\",[\"/_next/static/chunks/node_modules_next_dist_094231d7._.js\",\"/_next/static/chunks/app_favicon_ico_mjs_756560dc._.js\"],\"default\"]\n11:I[\"[project]/node_modules/next/dist/client/components/render-from-template-context.js [app-client] (ecmascript)\",[\"/_next/static/chunks/node_modules_next_dist_094231d7._.js\",\"/_next/static/chunks/app_favicon_ico_mjs_756560dc._.js\"],\"default\"]\n12:{}\n13:[[\"Function.all\",\"\",0,0,0,0,true]]\n10:{\"children\":[\"$\",\"$L11\",null,\"$12\",null,\"$13\",1]}\n14:[[\"Function.all\",\"\",0,0,0,0,true]]\nf:{\"parallelRouterKey\":\"children\",\"error\":\"$undefined\",\"errorStyles\":\"$undefined\",\"errorScripts\":\"$undefined\",\"template\":[\"$\",\"$9\",null,\"$10"])</script><script>self.__next_f.push([1,"\",null,\"$14\",0],\"templateStyles\":\"$undefined\",\"templateScripts\":\"$undefined\",\"notFound\":\"$Y\",\"forbidden\":\"$undefined\",\"unauthorized\":\"$undefined\",\"segmentViewBoundaries\":\"$Y\"}\n15:[[\"Function.all\",\"\",0,0,0,0,true]]\nd:{\"name\":\"RootLayout\",\"key\":null,\"env\":\"Server\",\"stack\":[],\"props\":{\"children\":[\"$\",\"$Le\",null,\"$f\",null,\"$15\",1],\"params\":\"$Y\"}}\n16:[[\"RootLayout\",\"/Users/wilkerribeiro/git/minesweeper/.next/dev/server/chunks/ssr/[root-of-the-server]__31c4daa8._.js\",79,263,78,1,false]]\n17:[[\"RootLayout\",\"/Users/wilkerribeiro/git/minesweeper/.next/dev/server/chunks/ssr/[root-of-the-server]__31c4daa8._.js\",81,270,78,1,false]]\n18:[[\"Function.all\",\"\",0,0,0,0,true]]\n1a:[[\"Function.all\",\"\",0,0,0,0,true]]\n1c:[]\n1e:{\"name\":\"NotFound\",\"key\":null,\"env\":\"Server\",\"stack\":[],\"props\":{}}\n1f:{\"name\":\"HTTPAccessErrorFallback\",\"key\":null,\"env\":\"Server\",\"owner\":\"$1e\",\"stack\":[],\"props\":{\"status\":404,\"message\":\"This page could not be found.\"}}\n20:[]\n21:[]\n22:[]\n23:[]\n24:[]\n25:[]\n26:[]\n27:[[\"Function.all\",\"\",0,0,0,0,true]]\n28:[[\"Function.all\",\"\",0,0,0,0,true]]\n29:[[\"Function.all\",\"\",0,0,0,0,true]]\n2a:[[\"Function.all\",\"\",0,0,0,0,true]]\n2c:{\"name\":\"Home\",\"key\":null,\"env\":\"Server\",\"stack\":[[\"Function.all\",\"\",0,0,0,0,true]],\"props\":{\"params\":\"$@2d\",\"searchParams\":\"$@2e\"}}\n2f:[[\"Home\",\"/Users/wilkerribeiro/git/minesweeper/.next/dev/server/chunks/ssr/[root-of-the-server]__48b9bce3._.js\",64,263,63,1,false]]\n30:[[\"Home\",\"/Users/wilkerribeiro/git/minesweeper/.next/dev/server/chunks/ssr/[root-of-the-server]__48b9bce3._.js\",66,270,63,1,false]]\n31:[[\"Home\",\"/Users/wilkerribeiro/git/minesweeper/.next/dev/server/chunks/ssr/[root-of-the-server]__48b9bce3._.js\",69,268,63,1,false]]\n32:[[\"Home\",\"/Users/wilkerribeiro/git/minesweeper/.next/dev/server/chunks/ssr/[root-of-the-server]__48b9bce3._.js\",72,276,63,1,false]]\n33:[[\"Home\",\"/Users/wilkerribeiro/git/minesweeper/.next/dev/server/chunks/ssr/[root-of-the-server]__48b9bce3._.js\",80,276,63,1,false]]\n34:[[\"Home\",\"/Users/wilkerribeiro/git/minesweeper/.next/dev/server/chunks/ssr/[root-of-the-server]__48b9bce3._.js\",94,268,63,1,false]]\n36:[[\"Array.map\",\"\",0,0,0,0,false],[\"Array.map\",\"\",0,0,0,0,false]]\n37:[[\"Array.map\",\"\",0,0,0,0,false],[\"Array.map\",\"\",0,0,0,0,false]]\n38:[[\"Array.map\",\"\",0,0,0,0,false],[\"Array.map\",\"\",0,0,0,0,false]]\n39:[[\"Array.map\",\"\",0,0,0,0,false],[\"Array.map\",\"\",0,0,0,0,false]]\n3a:[[\"Array.map\",\"\",0,0,0,0,false],[\"Array.map\",\"\",0,0,0,0,false]]\n3c:{\"name\":\"Next.MetadataOutlet\",\"key\":null,\"env\":\"Server\",\"stack\":[[\"Function.all\",\"\",0,0,0,0,true]],\"props\":{}}\n3d:[]\n3f:[]\n42:[]\n"])</script><script>self.__next_f.push([1,"45:\"$EObject.defineProperty(function(type,config,children){for(var propName,i=2;i\u003carguments.length;i++)validateChildKeys(arguments[i]);i={};var key=null;if(null!=config)for(propName in didWarnAboutOldJSXRuntime||!(\\\"__self\\\"in config)||\\\"key\\\"in config||(didWarnAboutOldJSXRuntime=!0,console.warn(\\\"Your app (or one of its dependencies) is using an outdated JSX transform. Update to the modern JSX transform for faster performance: https://react.dev/link/new-jsx-transform\\\")),hasValidKey(config)\u0026\u0026(checkKeyStringCoercion(config.key),key=\\\"\\\"+config.key),config)hasOwnProperty.call(config,propName)\u0026\u0026\\\"key\\\"!==propName\u0026\u0026\\\"__self\\\"!==propName\u0026\u0026\\\"__source\\\"!==propName\u0026\u0026(i[propName]=config[propName]);var childrenLength=arguments.length-2;if(1===childrenLength)i.children=children;else if(1\u003cchildrenLength){for(var childArray=Array(childrenLength),_i=0;_i\u003cchildrenLength;_i++)childArray[_i]=arguments[_i+2];Object.freeze\u0026\u0026Object.freeze(childArray),i.children=childArray}if(type\u0026\u0026type.defaultProps)for(propName in childrenLength=type.defaultProps)void 0===i[propName]\u0026\u0026(i[propName]=childrenLength[propName]);return key\u0026\u0026function(props,displayName){function warnAboutAccessingKey(){specialPropKeyWarningShown||(specialPropKeyWarningShown=!0,console.error(\\\"%s: `key` is not a prop. Trying to access it will result in `undefined` being returned. If you need to access the same value within the child component, you should pass it as a different prop. (https://react.dev/link/special-props)\\\",displayName))}warnAboutAccessingKey.isReactWarning=!0,Object.defineProperty(props,\\\"key\\\",{get:warnAboutAccessingKey,configurable:!0})}(i,\\\"function\\\"==typeof type?type.displayName||type.name||\\\"Unknown\\\":type),(propName=1e4\u003eReactSharedInternals.recentlyCreatedOwnerStacks++)?(childArray=Error.stackTraceLimit,Error.stackTraceLimit=10,childrenLength=Error(\\\"react-stack-top-frame\\\"),Error.stackTraceLimit=childArray):childrenLength=unknownOwnerDebugStack,ReactElement(type,key,i,getOwner(),childrenLength,propName?createTask(getTaskName(type)):unknownOwnerDebugTask)},\\\"name\\\",{value:\\\"\\\"})\"\n"])</script><script>self.__next_f.push([1,"44:{\"name\":\"NonIndex\",\"key\":null,\"env\":\"Server\",\"stack\":[],\"props\":{\"createElement\":\"$45\",\"pagePath\":\"/\",\"statusCode\":200,\"isPossibleServerAction\":false}}\n47:{\"name\":\"Next.Viewport\",\"key\":null,\"env\":\"Server\",\"stack\":[],\"props\":{}}\n48:[]\n4c:{\"name\":\"Next.Metadata\",\"key\":null,\"env\":\"Server\",\"stack\":[],\"props\":{}}\n4d:[]\n4e:[]\n50:[]\n52:[]\n55:[]\n2d:{}\n2e:\n56:[]\n57:[]\n58:[]\n59:[]\n5a:[[\"Array.map\",\"\",0,0,0,0,false]]\n5b:[]\n1:D{\"time\":0.7867079999996349}\n1:D\"$2\"\n1:D{\"time\":0.8852919999917503}\n1:null\nc:D{\"time\":2.6452080000017304}\nc:D\"$d\"\nc:D{\"time\":2.9392919999954756}\n1d:D{\"time\":3.0897079999995185}\n1d:D\"$1e\"\n1d:D{\"time\":3.14366699999664}\n1d:D\"$1f\"\n1d:D{\"time\":3.2440829999977723}\n1d:[[\"$\",\"title\",null,{\"children\":\"404: This page could not be found.\"},\"$1f\",\"$20\",1],[\"$\",\"div\",null,{\"style\":{\"fontFamily\":\"system-ui,\\\"Segoe UI\\\",Roboto,Helvetica,Arial,sans-serif,\\\"Apple Color Emoji\\\",\\\"Segoe UI Emoji\\\"\",\"height\":\"100vh\",\"textAlign\":\"center\",\"display\":\"flex\",\"flexDirection\":\"column\",\"alignItems\":\"center\",\"justifyContent\":\"center\"},\"children\":[\"$\",\"div\",null,{\"children\":[[\"$\",\"style\",null,{\"dangerouslySetInnerHTML\":{\"__html\":\"body{color:#000;background:#fff;margin:0}.next-error-h1{border-right:1px solid rgba(0,0,0,.3)}@media (prefers-color-scheme:dark){body{color:#fff;background:#000}.next-error-h1{border-right:1px solid rgba(255,255,255,.3)}}\"}},\"$1f\",\"$23\",1],[\"$\",\"h1\",null,{\"className\":\"next-error-h1\",\"style\":{\"display\":\"inline-block\",\"margin\":\"0 20px 0 0\",\"padding\":\"0 23px 0 0\",\"fontSize\":24,\"fontWeight\":500,\"verticalAlign\":\"top\",\"lineHeight\":\"49px\"},\"children\":404},\"$1f\",\"$24\",1],[\"$\",\"div\",null,{\"style\":{\"display\":\"inline-block\"},\"children\":[\"$\",\"h2\",null,{\"style\":{\"fontSize\":14,\"fontWeight\":400,\"lineHeight\":\"49px\",\"margin\":0},\"children\":\"This page could not be found.\"},\"$1f\",\"$26\",1]},\"$1f\",\"$25\",1]]},\"$1f\",\"$22\",1]},\"$1f\",\"$21\",1]]\nc:[\"$\",\"html\",null,{\"lang\":\"en\",\"children\":[\"$\",\"body\",null,{\"className\":\"geist_a71539c9-module__T19VSG__variable geist_mono_8d43a2aa-module__8Li5zG__variable antialiased\",\"children\":[\"$\",\"$L19\",null,{\"parallelRouterKey\":\"children\",\"error\":\"$undefined\",\"errorStyles\":\"$undefined\",\"errorScripts\":\"$undefined\",\"template\":[\"$\",\"$L1b\",null,{},null,\"$1a\",1],\"templateStyles\":\"$undefined\",\"templateScripts\":\"$undefined\",\"notFound\":[\"$\",\"$L7\",\"c-not-found\",{\"type\":\"not-found\",\"pagePath\":\"__next_builtin__not-found.js\",\"children\":[\"$1d\",[]]},null,\"$1c\",0],\"forbidden\":\"$undefined\",\"unauthorized\":\"$undefined\",\"segmentViewBoundaries\":[[\"$\",\"$L7\",null,{\"type\":\"boundary:not-found\",\"pagePath\":\"__next_builtin__not-found.js@boundary\"},null,\"$27\",1],\"$undefined\",\"$undefined\",[\"$\",\"$L7\",null,{\"type\":\"boundary:global-error\",\"pagePath\":\"__next_builtin__global-error.js\"},null,\"$28\",1]]},null,\"$18\",1]},\"$d\",\"$17\",1]},\"$d\",\"$16\",1]\n2b:D{\"time\":5.697499999994761}\n2b:D\"$2c\"\n2b:D{\"time\":5.918917000002693}\n2b:[\"$\",\"div\",null,{\"className\":\"min-h-screen bg-gradient-to-br from-slate-900 via-slate-800 to-slate-900\",\"children\":[\"$\",\"main\",null,{\"className\":\"container mx-auto py-8\",\"children\":[[\"$\",\"div\",null,{\"className\":\"text-center mb-8\",\"children\":[[\"$\",\"h1\",null,{\"className\":\"text-5xl font-bold text-white mb-2\",\"children\":\"♾️ Infinite Minesweeper\"},\"$2c\",\"$32\",1],[\"$\",\"p\",null,{\"className\":\"text-gray-300\",\"children\":\"An endless minesweeper experience with deterministic gameplay\"},\"$2c\",\"$33\",1]]},\"$2c\",\"$31\",1],[\"$\",\"$L35\",null,{},\"$2c\",\"$34\",1]]},\"$2c\",\"$30\",1]},\"$2c\",\"$2f\",1]\n3b:D{\"time\":6.759500000000116}\n3b:D\"$3c\"\n3b:D{\"time\":7.972916999991867}\n3b:[\"$\",\"$L3e\",null,{\"children\":[\"$\",\"$40\",null,{\"name\":\"Next.MetadataOutlet\",\"children\":\"$@41\"},\"$3c\",\"$3f\",1]},\"$3c\",\"$3d\",1]\n43:D{\"time\":8.250832999998238}\n43:D\"$44\"\n43:D{\"time\":8.261333000002196}\n43:null\n46:D{\"time\":8.306582999997772}\n46:D\"$47\"\n46:D{\"time\":8.395374999992782}\n46:[\"$\",\"$L49\",null,{\"children\":\"$@4a\"},\"$47\",\"$48\",1]\n4b:D{\"time\":8.521542000002228}\n4b:D\"$4c\"\n4b:D{\"time\":8.576625000001513}\n4b:[\"$\",\"div\",null,{\"hidden\":true,\"children\":[\"$\",\"$L4f\",null,{\"children\":[\"$\",\"$40\",null,{\"name\":\"Next.Metadata\",\"children\":\"$@51\"},\"$4c\",\"$50\",1]},\"$4c\",\"$4e\",1]},\"$4c\",\"$4d\",1]\n53"])</script><script>self.__next_f.push([1,":[]\n"])</script><script>self.__next_f.push([1,"0:{\"P\":\"$1\",\"b\":\"development\",\"c\":[\"\",\"\"],\"q\":\"\",\"i\":false,\"f\":[[[\"\",{\"children\":[\"__PAGE__\",{}]},\"$undefined\",\"$undefined\",true],[[\"$\",\"$L7\",\"layout\",{\"type\":\"layout\",\"pagePath\":\"layout.tsx\",\"children\":[\"$\",\"$9\",\"c\",{\"children\":[[[\"$\",\"link\",\"0\",{\"rel\":\"stylesheet\",\"href\":\"/_next/static/chunks/%5Broot-of-the-server%5D__28bc9c2a._.css\",\"precedence\":\"next_static/chunks/[root-of-the-server]__28bc9c2a._.css\",\"crossOrigin\":\"$undefined\",\"nonce\":\"$undefined\"},null,\"$a\",0],[\"$\",\"script\",\"script-0\",{\"src\":\"/_next/static/chunks/app_layout_tsx_78cdd4a3._.js\",\"async\":true,\"nonce\":\"$undefined\"},null,\"$b\",0]],\"$c\"]},null,\"$8\",1]},null,\"$6\",0],{\"children\":[[\"$\",\"$9\",\"c\",{\"children\":[[\"$\",\"$L7\",\"c-page\",{\"type\":\"page\",\"pagePath\":\"page.tsx\",\"children\":\"$2b\"},null,\"$2a\",1],[[\"$\",\"script\",\"script-0\",{\"src\":\"/_next/static/chunks/_d8815b53._.js\",\"async\":true,\"nonce\":\"$undefined\"},null,\"$36\",0],[\"$\",\"script\",\"script-1\",{\"src\":\"/_next/static/chunks/node_modules_next_dist_compiled_crypto-browserify_index_44cf344e.js\",\"async\":true,\"nonce\":\"$undefined\"},null,\"$37\",0],[\"$\",\"script\",\"script-2\",{\"src\":\"/_next/static/chunks/node_modules_next_dist_compiled_13f06b32._.js\",\"async\":true,\"nonce\":\"$undefined\"},null,\"$38\",0],[\"$\",\"script\",\"script-3\",{\"src\":\"/_next/static/chunks/47a44_dist_build_webpack_loaders_next-flight-loader_action-client-wrapper_82e62d8b.js\",\"async\":true,\"nonce\":\"$undefined\"},null,\"$39\",0],[\"$\",\"script\",\"script-4\",{\"src\":\"/_next/static/chunks/app_page_tsx_607b5035._.js\",\"async\":true,\"nonce\":\"$undefined\"},null,\"$3a\",0]],\"$3b\"]},null,\"$29\",0],{},null,false,false]},null,false,false],[\"$\",\"$9\",\"h\",{\"children\":[\"$43\",\"$46\",\"$4b\",[\"$\",\"meta\",null,{\"name\":\"next-size-adjust\",\"content\":\"\"},null,\"$52\",1]]},null,\"$42\",0],false]],\"m\":\"$W53\",\"G\":[\"$54\",[\"$\",\"$L7\",\"ge-svn\",{\"type\":\"global-error\",\"pagePath\":\"__next_builtin__global-error.js\",\"children\":[]},null,\"$55\",0]],\"S\":false}\n"])</script><script>self.__next_f.push([1,"4a:D{\"time\":10.187917000002926}\n4a:[[\"$\",\"meta\",\"0\",{\"charSet\":\"utf-8\"},\"$3c\",\"$56\",0],[\"$\",\"meta\",\"1\",{\"name\":\"viewport\",\"content\":\"width=device-width, initial-scale=1\"},\"$3c\",\"$57\",0]]\n51:D{\"time\":10.761874999996508}\n51:[[\"$\",\"title\",\"0\",{\"children\":\"Create Next App\"},\"$3c\",\"$58\",0],[\"$\",\"meta\",\"1\",{\"name\":\"description\",\"content\":\"Generated by create next app\"},\"$3c\",\"$59\",0],[\"$\",\"link\",\"2\",{\"rel\":\"icon\",\"href\":\"/favicon.ico?favicon.0b3bf435.ico\",\"sizes\":\"256x256\",\"type\":\"image/x-icon\"},\"$3c\",\"$5a\",0],[\"$\",\"$L5c\",\"3\",{},\"$3c\",\"$5b\",0]]\n41:D{\"time\":10.86699999999837}\n41:null\n"])</script><script data-nextjs-dev-overlay="true" style="display: block; position: absolute;"><nextjs-portal style="--nextjs-dev-tools-scale: 1;"></nextjs-portal></script><next-route-announcer style="position: absolute;"></next-route-announcer></body></html>
+
+[1A[2K  1) [chromium] › tests/e2e/progression.spec.ts:8:7 › Progression System › should persist progress across reloads 
+
+    Error: [2mexpect([22m[31mlocator[39m[2m).[22mtoBeVisible[2m([22m[2m)[22m failed
+
+    Locator: getByText('COINS')
+    Expected: visible
+    Timeout: 5000ms
+    Error: element(s) not found
+
+    Call log:
+    [2m  - Expect "toBeVisible" with timeout 5000ms[22m
+    [2m  - waiting for getByText('COINS')[22m
+
+
+      33 |     // Debug: Print page content if COINS not found
+      34 |     try {
+    > 35 |       await expect(page.getByText('COINS')).toBeVisible({ timeout: 5000 });
+         |                                             ^
+      36 |     } catch (e) {
+      37 |       console.log('Page content:', await page.content());
+      38 |       throw e;
+        at /Users/wilkerribeiro/git/minesweeper/tests/e2e/progression.spec.ts:35:45
+
+    Error Context: test-results/progression-Progression-Sy-71e9b-ist-progress-across-reloads-chromium/error-context.md
+
+
+[1A[2K  1 failed
+    [chromium] › tests/e2e/progression.spec.ts:8:7 › Progression System › should persist progress across reloads 
+  1 passed (1.4m)
+
+[36m  Serving HTML report at http://localhost:52291. Press Ctrl+C to quit.[39m

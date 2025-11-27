@@ -34,6 +34,18 @@ const endGameSessionSchema = z.object({
  * 
  * @returns Session ID, seed, and mine density
  */
+import { env } from '@/lib/env';
+
+// ... imports
+
+// ... schemas
+
+/**
+ * Creates a new game session
+ * Generates a unique seed and stores the session in Supabase
+ * 
+ * @returns Session ID, seed, and mine density
+ */
 export async function createGameSession(input?: { mineDensity?: number; userId?: string }) {
   try {
     // Validate input
@@ -42,6 +54,16 @@ export async function createGameSession(input?: { mineDensity?: number; userId?:
     // Generate a unique seed
     const seed = generateSeed();
     const mineDensity = validated.mineDensity || DEFAULT_MINE_DENSITY;
+
+    // Check for placeholder credentials (dev/test mode)
+    if (env.NEXT_PUBLIC_SUPABASE_URL.includes('placeholder')) {
+      console.warn('⚠️ Using mock game session due to placeholder credentials');
+      return {
+        sessionId: 'mock-session-' + Date.now(),
+        seed,
+        mineDensity,
+      };
+    }
     
     // Insert into Supabase
     const { data, error } = await supabaseAdmin
