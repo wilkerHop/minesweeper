@@ -90,11 +90,62 @@ jobs:
 
       - name: Health check
         run: |
-          echo "Running health check on ${{ steps.deploy.outputs.preview-url }}"
+          echo "🏥 Running health check on ${{ steps.deploy.outputs.preview-url }}"
+          
           # Wait for deployment to be ready
-          sleep 10
-          # Check if the deployment is accessible
-          curl -f -s -o /dev/null -w "%{http_code}" ${{ steps.deploy.outputs.preview-url }} || echo "Health check failed"
+          echo "⏳ Waiting 15 seconds for deployment to stabilize..."
+          sleep 15
+          
+          # Retry logic for health check
+          MAX_RETRIES=3
+          RETRY_COUNT=0
+          SUCCESS=false
+          
+          while [ $RETRY_COUNT -lt $MAX_RETRIES ] && [ "$SUCCESS" = false ]; do
+            echo "Attempt $((RETRY_COUNT + 1))/$MAX_RETRIES..."
+            
+            HTTP_CODE=$(curl -s -o /dev/null -w "%{http_code}" "${{ steps.deploy.outputs.preview-url }}")
+            CURL_EXIT_CODE=$?
+            
+            if [ $CURL_EXIT_CODE -ne 0 ]; then
+              echo "::warning::curl command failed with exit code $CURL_EXIT_CODE. This might indicate a network or DNS issue."
+              HTTP_CODE="000"
+            fi
+            
+            if [ "$HTTP_CODE" = "200" ]; then
+              echo "✅ Health check passed (HTTP $HTTP_CODE)"
+              SUCCESS=true
+            else
+              echo "⚠️  Health check returned HTTP $HTTP_CODE"
+              if [ $RETRY_COUNT -lt $((MAX_RETRIES - 1)) ]; then
+                echo "Retrying in 10 seconds..."
+                sleep 10
+              fi
+            fi
+            
+            RETRY_COUNT=$((RETRY_COUNT + 1))
+          done
+          
+          if [ "$SUCCESS" = false ]; then
+            echo "::error::Health check failed after $MAX_RETRIES attempts"
+            echo "::error::Deployment URL: ${{ steps.deploy.outputs.preview-url }}"
+            echo "::error::Last HTTP code: $HTTP_CODE"
+            exit 1
+          fi
+          
+          echo "🎉 Deployment is healthy and accessible!"
+
+      - name: Log deployment summary
+        if: always()
+        run: |
+          echo "📊 Deployment Summary"
+          echo "===================="
+          echo "Environment: ${{ inputs.environment }}"
+          echo "URL: ${{ steps.deploy.outputs.preview-url }}"
+          echo "Commit: ${{ github.sha }}"
+          echo "Branch: ${{ github.ref }}"
+          echo "Actor: ${{ github.actor }}"
+          echo "===================="
 
   e2e-tests:
     name: E2E Tests on ${{ inputs.environment }}
