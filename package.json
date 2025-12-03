@@ -19,7 +19,7 @@
     "@aws-sdk/s3-request-presigner": "^3.940.0",
     "@libsql/client": "^0.15.15",
     "@supabase/supabase-js": "^2.84.0",
-    "next": "16.0.4",
+    "next": "16.0.7",
     "react": "19.2.0",
     "react-dom": "19.2.0",
     "zod": "^4.1.13"
